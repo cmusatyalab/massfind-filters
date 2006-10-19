@@ -1,0 +1,71 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(MassFind, 0.1)
+AC_CONFIG_SRCDIR(src)
+AM_INIT_AUTOMAKE(foreign)
+AM_CONFIG_HEADER(config.h)
+AM_MAINTAINER_MODE
+
+AC_ISC_POSIX
+AC_PROG_CC
+AM_PROG_CC_STDC
+AC_PROG_CXX
+AC_HEADER_STDC
+AC_PROG_RANLIB
+
+pkg_modules="gtk+-2.0 >= 2.8.0 \
+	libglade-2.0 >= 2.5.1"
+ 
+PKG_CHECK_MODULES(glade, [$pkg_modules])
+AC_SUBST(glade_CFLAGS)
+AC_SUBST(glade_LIBS)
+
+AC_ARG_WITH(diamond,
+    [ --with-diamond=<path> path of Diamond installation. e.g. /usr/local/diamond or /opt/diamond],
+    [DIAMOND_PREFIX=$with_diamond],
+    [DIAMOND_PREFIX=/usr/local/diamond])
+
+AC_SUBST(DIAMOND_PREFIX)
+AC_SUBST(LDFLAGS, "-L${DIAMOND_PREFIX}/lib")
+AC_SUBST(CPPFLAGS, "-Werror-implicit-function-declaration -I${DIAMOND_PREFIX}/include")
+
+# XXX circular dependencies
+AC_SUBST(LIBS, "-lpthread -lm -lsearchlet -lfilterexec -lfilter -llog -lodisk -ltools -lhstub -ldctl -ldconfig -llog -lssl")
+
+# XXX should work on more than 1 arch
+AC_SUBST(CFLAGS, "-m32 -g")
+
+# XXX replace mains with real functions
+AC_CHECK_LIB([dconfig], [main], ,
+        [AC_MSG_ERROR(Missing libdconfig)])
+AC_CHECK_LIB([dctl], [dctl_read_char], ,
+        [AC_MSG_ERROR(Missing libdctl)])
+AC_CHECK_LIB([filter], [main], ,
+        [AC_MSG_ERROR(Missing libfilter)])
+AC_CHECK_LIB([searchlet], [main], ,
+        [AC_MSG_ERROR(Missing libsearchlet)])
+AC_CHECK_LIB([odisk], [main], ,
+        [AC_MSG_ERROR(Missing libodisk)])
+AC_CHECK_LIB([filterexec], [main], ,
+        [AC_MSG_ERROR(Missing libfilterexec)])
+AC_CHECK_LIB([hstub], [main], ,
+        [AC_MSG_ERROR(Missing libhstub)])
+AC_CHECK_LIB([log], [main], ,
+        [AC_MSG_ERROR(Missing liblog)])
+AC_CHECK_LIB([tools], [main], ,
+        [AC_MSG_ERROR(Missing libtools)])
+        
+# this filter library is installed with snapfind
+AC_CHECK_FILE([${DIAMOND_PREFIX}/lib/fil_rgb.a],,
+			[AC_MSG_ERROR(Missing fil_rgb.a)])
+
+AC_OUTPUT([
+Makefile
+src/Makefile
+src/app/Makefile
+src/filter/Makefile
+data/Makefile
+data/glade/Makefile
+data/filter/Makefile
+])
+
