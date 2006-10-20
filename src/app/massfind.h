@@ -19,10 +19,8 @@
 #include <gtk/gtk.h>
 
 extern GladeXML *g_xml;
-extern GdkPixbuf *c_pix;
 
 extern GtkListStore *saved_search_store;
-
 extern GtkListStore *found_items;
 
 #endif
