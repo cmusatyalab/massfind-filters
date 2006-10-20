@@ -99,11 +99,8 @@ void draw_roi_border(GtkWidget *w, double x, double y,
 
 	cairo_t *cr = gdk_cairo_create(w->window);
 
-	// draw a circle at the mass center	
 	cairo_scale(cr, scale, scale);
   	cairo_rectangle (cr, x, y, wi, ht);
- 	
- 	// draw the circle border
  	cairo_set_line_width(cr, 10.0);
  	cairo_set_source_rgb (cr, 1.0, 0, 0);  // in red!
  	cairo_stroke (cr);
