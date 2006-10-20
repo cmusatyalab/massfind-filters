@@ -2,12 +2,14 @@
 
 gladedir = $(datadir)/massfind/glade
 filterdir = $(datadir)/massfind/filter
+libfilterdir = ${DIAMOND_PREFIX}/lib
 
 INCLUDES = -I$(gladesrcs) \
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\" \
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
 	-DMASSFIND_GLADEDIR=\""$(gladedir)"\" \
 	-DMASSFIND_FILTERDIR=\""$(filterdir)"\" \
+	-DDIAMOND_FILTERDIR=\""${libfilterdir}"\" \
 	@glade_CFLAGS@
 
 bin_PROGRAMS = massfind
