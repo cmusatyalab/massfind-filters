@@ -17,5 +17,12 @@ libfil_boostldm_a_SOURCES = fil_boostldm.c fil_boostldm.h
 
 libfil_qaldm_a_SOURCES = fil_qaldm.c fil_qaldm.h
 
-
-
+## override automake's rules 
+libfil_euclidian.a: fil_euclidian.o
+	$(LD) -o $@ -r $^ 
+	
+libfil_boostldm.a: fil_boostldm.o
+	$(LD) -o $@ -r $^ 
+	
+libfil_qaldm.a: fil_qaldm.o
+	$(LD) -o $@ -r $^ 
