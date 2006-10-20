@@ -15,27 +15,32 @@
 #ifndef ROIMAP_H
 #define ROIMAP_H
 
+#include <gdk/gdk.h>
 #include <glib.h>
-
-#define MAXLINELEN 256
-#define SEPARATORS " \t"
-
-typedef struct {
-	char *name;
-	size_t len;
-	unsigned char *data;
-} roi_attr_t;
 
 typedef struct {
   char *full_image_name;
   char *roi_image_name;
   int center_x;
   int center_y;
+  int subtlety;
+  int birad;
+  int density;
+  int age;
+  int biopsy;
+  int shape;
+  int margin;
   GdkPixbuf *pixbuf;
   GHashTable *attrs;
 } roi_t;
 
+enum diagnosis {MALIGNANT, BENIGN};
+enum mass_shape {ROUND, OVAL, LOBULATED, IRREGULAR};
+enum mass_margin {SPICULATED, ILLDEFINED, MICROLOBULATED, CIRCUMSCRIBED, OBSCURED};
+
 roi_t *get_roi(char *path);
 void free_roi(roi_t *r);
+
+
 
 #endif
