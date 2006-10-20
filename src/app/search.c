@@ -125,21 +125,24 @@ void on_startSearch_clicked (GtkButton *button,
   if (gtk_tree_selection_get_selected(selection,
 				      &model,
 				      &s_iter)) {
-    gdouble r_min;
-    gdouble r_max;
-    gdouble max_eccentricity;
+    gdouble threshold;
+  	int metric;
+  	int n;
+    float *f;
     GtkWidget *stopSearch = glade_xml_get_widget(g_xml, "stopSearch");
 
 
     g_debug("saved_search_store: %p", model);
     gtk_tree_model_get(model,
 		       &s_iter,
-		       1, &r_min,
-		       2, &r_max,
-		       3, &max_eccentricity,
+		       1, &metric,
+		       2, &threshold,
+		       3, &n,
+		       4, &f,
 		       -1);
 
-    g_debug("searching from %g to %g", r_min, r_max);
+	g_debug("starting search, metric %d, #features = %d, threshold %d", 
+			metric, n, threshold);
 
     // reset stats
     total_objects = 0;
@@ -147,7 +150,7 @@ void on_startSearch_clicked (GtkButton *button,
     dropped_objects = 0;
 
     // diamond
-    dr = diamond_similarity_search(r_min, r_max);
+	dr = diamond_similarity_search(metric, threshold, n, f);
 
     // take the handle, put it into the idle callback to get
     // the results?
