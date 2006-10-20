@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include "lib_filter.h"
 #include "fil_euclidian.h"
@@ -34,10 +35,10 @@ int f_init_euclidian(int numarg, char **args, int blob_len,
 	fconfig = (euclidian_config_t *)malloc(sizeof(*fconfig));
 	assert(fconfig);
 
-	fconfig->numFeatures = numarg-1;
+	fconfig->numFeatures = numarg;
 	fconfig->features = (float *) malloc(sizeof(float) * fconfig->numFeatures);
     for (i = 0; i < fconfig->numFeatures; i++) {
-    	fconfig->features[i] = atof(args[i+1]);
+    	fconfig->features[i] = atof(args[i]);
      }
 
 	/*
@@ -68,17 +69,20 @@ int f_eval_euclidian(lf_obj_handle_t ohandle, void *f_data)
 	int numFeatures;
 	float f;
 	float distance = 0;
+	char fname[7];
 	
 	lf_log(LOGL_TRACE, "f_eval_euclidian: enter");
 	
 	// extract the features for this object
-	err = lf_read_attr(ohandle, "NUMFEATURES", &featureLen, featureStr);
+	err = lf_read_attr(ohandle, "numupmc", &featureLen, featureStr);
 	assert(err == 0);
 	numFeatures = atoi((char *)featureStr);
 	assert(numFeatures == fconfig->numFeatures);
 
 	for(i=0; i<numFeatures; i++) {
-		err = lf_read_attr(ohandle, "NUMFEATURES", &featureLen, featureStr);
+		sprintf(fname, "upmc%02d", i);
+		featureLen = MAXFEATURELEN;  // reset, o.w. could be too small
+		err = lf_read_attr(ohandle, fname, &featureLen, featureStr);
 		assert(err == 0);
 		f = atof((char *)featureStr);
 		distance=distance+pow((f-fconfig->features[i]),2);
