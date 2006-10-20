@@ -126,12 +126,11 @@ static void setup_results_store(GtkIconView *g) {
   GtkTreeIter iter;
 
   found_items =
-    gtk_list_store_new(5,
+    gtk_list_store_new(4,
 		       GDK_TYPE_PIXBUF,
 		       G_TYPE_STRING,
-		       G_TYPE_POINTER,
 		       GDK_TYPE_PIXBUF,
-		       G_TYPE_DOUBLE);
+		       G_TYPE_INT);
 
   gtk_icon_view_set_model(g, GTK_TREE_MODEL(found_items));
   gtk_icon_view_set_pixbuf_column(g, 0);
