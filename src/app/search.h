@@ -29,6 +29,9 @@ extern "C" {
   void on_startSearch_clicked (GtkButton *button,
 			       gpointer   user_data);
 
+  void on_reorderResults_clicked (GtkButton *button,
+			       gpointer   user_data);
+
   void on_searchResults_selection_changed (GtkIconView *view,
 					   gpointer user_data);
 
