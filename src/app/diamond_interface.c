@@ -22,7 +22,7 @@
 #include <errno.h>
 #include <gtk/gtk.h>
 #include <glib/gstdio.h>
-#include <dirent.h>
+#include <sys/param.h>
 #include <string.h>
 
 #include "lib_filter.h"
@@ -86,8 +86,8 @@ static void diamond_init(void) {
       err = nlkup_lookup_collection(collections[i].name, &num_gids, gids);
       g_assert(!err);
       for (j=0; j < num_gids; j++) {
-	printf("adding gid: %lld\n", gids[j]);
-	diamond_gid_list.gids[diamond_gid_list.num_gids++] = gids[j];
+		g_debug("adding gid: %lld\n", gids[j]);
+		diamond_gid_list.gids[diamond_gid_list.num_gids++] = gids[j];
       }
     }
   }
@@ -129,7 +129,7 @@ static ls_search_handle_t generic_search (char *filter_spec_name) {
   close(f2);
 
   err = ls_set_searchlet(diamond_handle, DEV_ISA_IA32,
-			 MASSFIND_FILTERDIR "/fil_rgb.so",
+			 DIAMOND_FILTERDIR "/fil_rgb.a",
 			 filter_spec_name);
   g_assert(!err);
 
@@ -221,7 +221,7 @@ gboolean diamond_result_callback(gpointer g_data) {
     // no results right now
     time_t now = time(NULL);
     if (now > last_time) {
-      update_stats(dr);
+ //     update_stats(dr);
     }
     last_time = now;
 
@@ -296,14 +296,14 @@ gboolean diamond_result_callback(gpointer g_data) {
 ls_search_handle_t diamond_similarity_search(int searchType, 
 											 int threshold,
 											 int numFeatures, 
-											 flost *features) {
+											 float *features) {
   ls_search_handle_t dr;
   int fd;
   int i;
   FILE *f;
   gchar *name_used;
   int err;
-  char filter_name[MAXNAMLEN];
+  char filter_name[MAXPATHLEN];
 
   // temporary file
   fd = g_file_open_tmp(NULL, &name_used, NULL);
@@ -312,6 +312,7 @@ ls_search_handle_t diamond_similarity_search(int searchType,
   // write out file for similarity search
   f = fdopen(fd, "a");
   g_return_val_if_fail(f, NULL);
+  strcpy(filter_name, DIAMOND_FILTERDIR);
   
   switch (searchType) {
   	case EUCLIDIAN:
@@ -322,7 +323,7 @@ ls_search_handle_t diamond_similarity_search(int searchType,
 	  "INIT_FUNCTION  f_init_euclidian\n"
 	  "FINI_FUNCTION  f_fini_euclidian\n",
 	  threshold);
-	strcpy(filter_name, "/libfil_euclidian.a");
+	strcat(filter_name, "/libfil_euclidian.a");
 	break;
 	
   	case BOOSTLDM:
@@ -333,7 +334,7 @@ ls_search_handle_t diamond_similarity_search(int searchType,
 	  "INIT_FUNCTION  f_init_boostldm\n"
 	  "FINI_FUNCTION  f_fini_boostldm\n",
 	  threshold);
- 	strcpy(filter_name, "/libfil_boostldm.a");
+ 	strcat(filter_name, "/libfil_boostldm.a");
   	break;
   	
   	case QALDM:
@@ -344,7 +345,7 @@ ls_search_handle_t diamond_similarity_search(int searchType,
 	  "INIT_FUNCTION  f_init_qaldm\n"
 	  "FINI_FUNCTION  f_fini_qaldm\n",
 	  threshold);
-	strcpy(filter_name, "/libfil_qaldm.a");
+	strcat(filter_name, "/libfil_qaldm.a");
  	break;
   }
   
@@ -361,8 +362,7 @@ ls_search_handle_t diamond_similarity_search(int searchType,
   // initialize with generic search
   dr = generic_search(name_used);
  
-  err = ls_add_filter_file(dr, DEV_ISA_IA32,
-			   strcat(MASSFIND_FILTERDIR, filter_name));
+  err = ls_add_filter_file(dr, DEV_ISA_IA32, filter_name);
   g_assert(!err);
 
   // now close
