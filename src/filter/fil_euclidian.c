@@ -87,6 +87,12 @@ int f_eval_euclidian(lf_obj_handle_t ohandle, void *f_data)
 		f = atof((char *)featureStr);
 		distance=distance+pow((f-fconfig->features[i]),2);
 	}
+	int similarity = 100*exp(-distance);
+	
+	// save results as attributes
+	err = lf_write_attr(ohandle, "similarity", sizeof(int), 
+	   					(unsigned char *) &similarity);
+	assert(err == 0);
 
-	return (int) distance;
+	return similarity;
 }

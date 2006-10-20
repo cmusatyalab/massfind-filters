@@ -16,14 +16,14 @@
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
+#include <stdio.h>
 
 #include "lib_filter.h"
 #include "fil_boostldm.h"
 
-
 #define MAXFEATURELEN 80
 
-float alpha[51] = {
+float alpha[] = {
 	0.073741,
  	0.037224,
 	0.027064,
@@ -91,10 +91,10 @@ int f_init_boostldm(int numarg, char **args, int blob_len,
 	fconfig = (boostldm_config_t *)malloc(sizeof(*fconfig));
 	assert(fconfig);
 
-	fconfig->numFeatures = numarg-1;
+	fconfig->numFeatures = numarg;
 	fconfig->features = (float *) malloc(sizeof(float) * fconfig->numFeatures);
     for (i = 0; i < fconfig->numFeatures; i++) {
-    	fconfig->features[i] = atof(args[i+1]);
+    	fconfig->features[i] = atof(args[i]);
      }
 
 	/*
@@ -125,17 +125,20 @@ int f_eval_boostldm(lf_obj_handle_t ohandle, void *f_data)
 	int numFeatures;
 	float f;
 	float distance = 0;
+	char fname[7];
 	
 	lf_log(LOGL_TRACE, "f_eval_boostldm: enter");
 	
 	// extract the features for this object
-	err = lf_read_attr(ohandle, "NUMFEATURES", &featureLen, featureStr);
+	err = lf_read_attr(ohandle, "numbdmf", &featureLen, featureStr);
 	assert(err == 0);
 	numFeatures = atoi((char *)featureStr);
 	assert(numFeatures == fconfig->numFeatures);
 
 	for(i=0; i<numFeatures; i++) {
-		err = lf_read_attr(ohandle, "NUMFEATURES", &featureLen, featureStr);
+		sprintf(fname, "bdmf%02d", i);
+		featureLen = MAXFEATURELEN;  // reset, o.w. could be too small
+		err = lf_read_attr(ohandle, fname, &featureLen, featureStr);
 		assert(err == 0);
 		f = atof((char *)featureStr);
 
@@ -144,8 +147,14 @@ int f_eval_boostldm(lf_obj_handle_t ohandle, void *f_data)
 		// We can hardcode them into the searchlet.
 	    distance += alpha[i] * (fconfig->features[i] != f);
 	}
+	int similarity = 100*exp(-distance);
+	
+	// save results as attributes
+	err = lf_write_attr(ohandle, "similarity", sizeof(int), 
+	   					(unsigned char *) &similarity);
+	assert(err == 0);
 
-	return (int) distance;
+	return similarity;
 }
 
 
