@@ -25,6 +25,8 @@
 #include <sys/param.h>
 #include <string.h>
 
+#include <cairo.h>
+
 #include "lib_filter.h"
 #include "lib_dconfig.h"
 
@@ -49,6 +51,51 @@ void compute_thumbnail_scale(double *scale, gint *w, gint *h) {
     *w = 150;
     *h = *w / p_aspect;
   }
+}
+
+void convert_cairo_argb32_to_pixbuf(guchar *pixels,
+				    gint w, gint h, gint stride) {
+  gint x, y;
+
+  // swap around the data
+  // XXX also handle pre-multiplying?
+  for (y = 0; y < h; y++) {
+    for (x = 0; x < w; x++) {
+      // XXX check endian
+#if G_BYTE_ORDER == G_LITTLE_ENDIAN
+      guchar *p = pixels + (stride * y) + (4 * x);
+
+      guchar r = p[2];
+      guchar b = p[0];
+
+      p[0] = r;
+      p[2] = b;
+#else
+      guint *p = (guint *) (pixels + (stride * y) + (4 * x));
+      *p = GUINT32_SWAP_LE_BE(*p);
+#endif
+    }
+  }
+}
+
+void draw_thumbnail_border(GdkPixbuf *pix,
+						double image_scale, gint w, gint h) {
+  guchar *pixels = gdk_pixbuf_get_pixels(pix);
+  int stride = gdk_pixbuf_get_rowstride(pix);
+  cairo_surface_t *surface = cairo_image_surface_create_for_data(pixels,
+								 CAIRO_FORMAT_ARGB32,
+								 w, h, stride);
+ 	cairo_t *cr = cairo_create(surface);
+  	cairo_scale(cr, image_scale, image_scale);
+ 	cairo_rectangle (cr, 0, 0, w, h);
+ 	cairo_set_line_width(cr, 10.0);
+ 	cairo_set_source_rgb (cr, 1.0, 0, 0);  // in red!
+ 	cairo_stroke (cr);
+
+  	cairo_destroy(cr);
+  	cairo_surface_destroy(surface);
+
+  	convert_cairo_argb32_to_pixbuf(pixels, w, h, stride);
 }
 
 static void diamond_init(void) {
@@ -188,27 +235,19 @@ gboolean diamond_result_callback(gpointer g_data) {
 
   ls_obj_handle_t obj;
   void *data;
-  char *name;
-  void *cookie;
   unsigned int len;
   int err;
   int w, origW;
   int h, origH;
-  GdkPixbuf *pix, *pix2, *pix3;
+  GdkPixbuf *pix, *pix2;
 
   static time_t last_time;
-
   int i;
-
-  GList *clist = NULL;
   gchar *title;
-
   GtkTreeIter iter;
-
-  double scale, prescale;
-
+  double scale;
+  int similarity;
   ls_search_handle_t dr;
-
 
   // get handle
   dr = (ls_search_handle_t) g_data;
@@ -237,8 +276,6 @@ gboolean diamond_result_callback(gpointer g_data) {
     return FALSE;
   }
 
-  printf("got object: %p\n", obj);
-
   // thumbnail
   err = lf_ref_attr(obj, "_cols.int", &len, (unsigned char **) &data);
   g_assert(!err);
@@ -250,41 +287,38 @@ gboolean diamond_result_callback(gpointer g_data) {
 
   err = lf_ref_attr(obj, "_rgb_image.rgbimage", &len, (unsigned char **) &data);
   g_assert(!err);
-
-  printf(" img %dx%d (%d bytes)\n", w, h, len);
-
+  
   pix = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB,
 				 TRUE, 8, w, h, w*4, NULL, NULL);
+ 
+  // create a thumbnail
   compute_thumbnail_scale(&scale, &w, &h);
-
-  // draw into scaled-down image
-  w *= 4;
-  h *= 4;
-  pix3 = gdk_pixbuf_scale_simple(pix,
-				 w, h,
-				 GDK_INTERP_BILINEAR);
-  prescale = (double) w / (double) origW;
+  pix2 = gdk_pixbuf_scale_simple(pix, w, h, GDK_INTERP_BILINEAR);
+ // draw_thumbnail_border(pix2, scale, origW, origH);
+ 
+  err = lf_ref_attr(obj, "similarity", &len, (unsigned char **) &data);
+  g_assert(!err);
+  similarity = *((int *) data);
+ 
+  // get the title - really a file name
+  err = lf_ref_attr(obj, "name", &len, (unsigned char **) &data);     
+  g_assert(!err);
+  
+  title = g_strdup_printf("%s (%d)", (char *) data, similarity);
+		 
+  g_debug(" got object %s", title);
 
   // store
   gtk_list_store_append(found_items, &iter);
   gtk_list_store_set(found_items, &iter,
 		     0, pix2,
 		     1, title,
-		     2, clist,
-		     3, pix3,
-		     4, prescale,
+		     2, pix,
+		     3, similarity,
 		     -1);
 
   g_object_unref(pix);
   g_object_unref(pix2);
-  g_object_unref(pix3);
-
-
-  //  err = lf_first_attr(obj, &name, &len, &data, &cookie);
-  //  while (!err) {
-  //    printf(" attr name: %s, length: %d\n", name, len);
-  //    err = lf_next_attr(obj, &name, &len, &data, &cookie);
-  //  }
 
   err = ls_release_object(dr, obj);
   g_assert(!err);
@@ -294,7 +328,7 @@ gboolean diamond_result_callback(gpointer g_data) {
 
 
 ls_search_handle_t diamond_similarity_search(int searchType, 
-											 int threshold,
+											 double threshold,
 											 int numFeatures, 
 											 float *features) {
   ls_search_handle_t dr;
@@ -322,7 +356,7 @@ ls_search_handle_t diamond_similarity_search(int searchType,
 	  "EVAL_FUNCTION  f_eval_euclidian\n"
 	  "INIT_FUNCTION  f_init_euclidian\n"
 	  "FINI_FUNCTION  f_fini_euclidian\n",
-	  threshold);
+	  (int) threshold);
 	strcat(filter_name, "/libfil_euclidian.a");
 	break;
 	
@@ -333,7 +367,7 @@ ls_search_handle_t diamond_similarity_search(int searchType,
 	  "EVAL_FUNCTION  f_eval_boostldm\n"
 	  "INIT_FUNCTION  f_init_boostldm\n"
 	  "FINI_FUNCTION  f_fini_boostldm\n",
-	  threshold);
+	  (int) threshold);
  	strcat(filter_name, "/libfil_boostldm.a");
   	break;
   	
@@ -344,7 +378,7 @@ ls_search_handle_t diamond_similarity_search(int searchType,
 	  "EVAL_FUNCTION  f_eval_qaldm\n"
 	  "INIT_FUNCTION  f_init_qaldm\n"
 	  "FINI_FUNCTION  f_fini_qaldm\n",
-	  threshold);
+	  (int) threshold);
 	strcat(filter_name, "/libfil_qaldm.a");
  	break;
   }
