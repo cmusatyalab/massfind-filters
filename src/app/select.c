@@ -93,6 +93,25 @@ void draw_roi_center(GtkWidget *w, int cx, int cy, double scale) {
 	cairo_destroy(cr);	
 }
 
+
+void draw_roi_border(GtkWidget *w, double x, double y, 
+					double wi, double ht, double scale) {
+
+	cairo_t *cr = gdk_cairo_create(w->window);
+
+	// draw a circle at the mass center	
+	cairo_scale(cr, scale, scale);
+  	cairo_rectangle (cr, x, y, wi, ht);
+ 	
+ 	// draw the circle border
+ 	cairo_set_line_width(cr, 10.0);
+ 	cairo_set_source_rgb (cr, 1.0, 0, 0);  // in red!
+ 	cairo_stroke (cr);
+	
+	cairo_destroy(cr);	
+}
+
+
 static void foreach_selection(GtkIconView *icon_view,
 								GtkTreePath *path,
 					      		gpointer data) {
@@ -168,6 +187,12 @@ gboolean on_selection_expose_event (GtkWidget *d,
 	if (roi) {
   		// draw mass roi seed and border on (scaled) full image
 		draw_roi_center(d, roi->center_x, roi->center_y, scale);
+		double frame_x = roi->center_x - (gdk_pixbuf_get_width(roi->pixbuf)/2);
+		double frame_y = roi->center_y - (gdk_pixbuf_get_height(roi->pixbuf)/2);
+		draw_roi_border(d, frame_x, frame_y, 
+						gdk_pixbuf_get_width(roi->pixbuf), 
+						gdk_pixbuf_get_height(roi->pixbuf),
+						scale);
   	}    
   }
   
