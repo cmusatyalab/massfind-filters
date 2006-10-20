@@ -25,26 +25,13 @@
 #include "search.h"
 #include "diamond_interface.h"
 
-
 GtkListStore *found_items;
 
 static GdkPixbuf *i_pix;
 static GdkPixbuf *i_pix_scaled;
 
-static gdouble prescale;
-static gdouble display_scale = 1.0;
-
 static ls_search_handle_t dr;
 static guint search_idle_id;
-
-static GtkTreePath *current_result_path;
-
-static gboolean is_adding;
-static gint x_add_start;
-static gint y_add_start;
-static gint x_add_current;
-static gint y_add_current;
-
 
 static void stop_search(void) {
   if (dr != NULL) {
@@ -55,8 +42,40 @@ static void stop_search(void) {
   }
 }
 
+static void draw_investigate_offscreen_items(gint allocation_width,
+					     gint allocation_height) {
+  // clear old scaled pix
+  if (i_pix_scaled != NULL) {
+    g_object_unref(i_pix_scaled);
+    i_pix_scaled = NULL;
+  }
 
-static void foreach_select_investigation(GtkIconView *icon_view,
+  // is something selected?
+  if (i_pix) {
+  	// scale the image to the allocation size
+	float p_aspect = (float) gdk_pixbuf_get_width(i_pix) /
+  					(float) gdk_pixbuf_get_height(i_pix);
+	int sw = allocation_width;
+	int sh = allocation_height;
+	float w_aspect = (float) sw / (float) sh;
+	
+	/* is window wider than pixbuf? */
+	if (p_aspect < w_aspect) {
+ 		/* then calculate width from height */
+		sw = sh * p_aspect;
+	} else {
+		/* else calculate height from width */
+  		sh = sw / p_aspect;
+	}
+	i_pix_scaled = gdk_pixbuf_scale_simple(i_pix,
+				   sw, sh,
+				   GDK_INTERP_BILINEAR);
+ 	g_debug("image %x: new scaled %x", i_pix, i_pix_scaled);
+ 
+  }
+}
+
+static void foreach_select_result(GtkIconView *icon_view,
 					 GtkTreePath *path,
 					 gpointer data) {
   GError *err = NULL;
@@ -64,18 +83,41 @@ static void foreach_select_investigation(GtkIconView *icon_view,
   GtkTreeIter iter;
   GtkTreeModel *m = gtk_icon_view_get_model(icon_view);
   GtkWidget *w;
-
-  // save path
-  if (current_result_path != NULL) {
-    gtk_tree_path_free(current_result_path);
-  }
-  current_result_path = gtk_tree_path_copy(path);
-
+  gchar *title;
+  
+  // get the full size image stored for this thumbnail
   gtk_tree_model_get_iter(m, &iter, path);
-
+  gtk_tree_model_get(m, &iter, 
+  					1, &title, 
+  					2, &i_pix, 
+  					-1);
+  g_debug("Image %s selected (%x)", title, i_pix);
+ 
   w = glade_xml_get_widget(g_xml, "selectedResult");
-  gtk_widget_queue_draw(w);
+  gtk_widget_queue_draw(w);  
 }
+
+gboolean on_selectedResult_expose_event (GtkWidget *d,
+					 GdkEventExpose *event,
+					 gpointer user_data) {
+
+	g_debug("selected result expose event");
+ 
+  	if (i_pix) {	
+  		g_debug("drawing image %x, scaled %x", i_pix, i_pix_scaled);
+		gdk_draw_pixbuf(d->window,
+		    d->style->fg_gc[GTK_WIDGET_STATE(d)],
+		    i_pix_scaled,
+		    0, 0, 
+		    d->allocation.x, d->allocation.y,
+		    -1, -1,
+		    GDK_RGB_DITHER_NORMAL,
+		    0, 0);
+  	}
+
+  	return TRUE;
+}
+
 
 
 void on_clearSearch_clicked (GtkButton *button,
@@ -108,6 +150,7 @@ void on_stopSearch_clicked (GtkButton *button,
   gtk_widget_set_sensitive(stopSearch, FALSE);
   gtk_widget_set_sensitive(startSearch, TRUE);
 
+   // stop
   stop_search();
 }
 
@@ -141,7 +184,7 @@ void on_startSearch_clicked (GtkButton *button,
 		       4, &f,
 		       -1);
 
-	g_debug("starting search, metric %d, #features = %d, threshold %d", 
+	g_debug("starting search, metric %d, #features = %d, threshold %f", 
 			metric, n, threshold);
 
     // reset stats
@@ -150,7 +193,7 @@ void on_startSearch_clicked (GtkButton *button,
     dropped_objects = 0;
 
     // diamond
-	dr = diamond_similarity_search(metric, threshold, n, f);
+	dr = diamond_similarity_search(metric, (int) threshold, n, f);
 
     // take the handle, put it into the idle callback to get
     // the results?
@@ -164,11 +207,24 @@ void on_startSearch_clicked (GtkButton *button,
   }
 }
 
+void on_reorderResults_clicked (GtkButton *button,
+			    gpointer user_data) {
+	g_debug("reorder results button clicked");
+  	
+  	GtkWidget *results = glade_xml_get_widget(g_xml, "searchResults");
+}
+
+
 void on_searchResults_selection_changed (GtkIconView *view,
 					 gpointer user_data) {
   GtkWidget *w;
 
   // load the image
-  gtk_icon_view_selected_foreach(view, foreach_select_investigation, NULL);
-
+  gtk_icon_view_selected_foreach(view, foreach_select_result, NULL);
+  
+ // draw the offscreen items
+  w = glade_xml_get_widget(g_xml, "selectedResult");
+  draw_investigate_offscreen_items(w->allocation.width,
+				   w->allocation.height);  
 }
+
