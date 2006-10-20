@@ -42,7 +42,7 @@ extern int dropped_objects;
 #ifdef __cplusplus
 extern "C" {
 #endif
-  ls_search_handle_t diamond_similarity_search(int searchType, int threshold,
+  ls_search_handle_t diamond_similarity_search(int searchType, double threshold,
 					int numFeatures, float *features);
   gboolean diamond_result_callback(gpointer data);
 #ifdef __cplusplus
