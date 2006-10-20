@@ -23,6 +23,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 
 #include "massfind.h"
 
@@ -32,11 +33,12 @@ static void setup_saved_search_store(void) {
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
 
-  saved_search_store = gtk_list_store_new(4,
+  saved_search_store = gtk_list_store_new(5,
 					  G_TYPE_STRING,
+					  G_TYPE_INT,
 					  G_TYPE_DOUBLE,
-					  G_TYPE_DOUBLE,
-					  G_TYPE_DOUBLE);
+					  G_TYPE_INT,
+					  G_TYPE_POINTER);
 
   gtk_tree_view_set_model(v, GTK_TREE_MODEL(saved_search_store));
 
@@ -176,6 +178,8 @@ main (int argc, char *argv[])
 
 
   gtk_widget_show_all(massfind);
+  
+  signal(SIGPIPE, SIG_IGN);
 
   gtk_main();
   return 0;
