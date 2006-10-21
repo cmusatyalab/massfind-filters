@@ -108,6 +108,77 @@ void draw_roi_border(GtkWidget *w, double x, double y,
 	cairo_destroy(cr);	
 }
 
+void write_case_data(roi_t *roi) {
+	
+   char textLabel[80];
+   GtkWidget *w;
+   
+   w = glade_xml_get_widget(g_xml, "caseId");
+   sprintf(textLabel, "Case ID: %s", roi->case_name);
+   gtk_label_set_text(GTK_LABEL(w), textLabel);
+   
+   w = glade_xml_get_widget(g_xml, "caseAge");
+   sprintf(textLabel, "Patient age: %d", roi->age);
+   gtk_label_set_text(GTK_LABEL(w), textLabel);
+  
+   w = glade_xml_get_widget(g_xml, "caseBiopsy");
+   sprintf(textLabel, "Biopsy result: MALIGNANT");
+   gtk_label_set_text(GTK_LABEL(w), textLabel);
+   
+   w = glade_xml_get_widget(g_xml, "caseShape");
+   switch (roi->shape) {
+   		case ROUND:
+   		  	sprintf(textLabel, "Mass shape: round");
+   		  	break;
+   		case OVAL:
+   			sprintf(textLabel, "Mass shape: oval");
+   			break;
+   		case LOBULATED:
+   			sprintf(textLabel, "Mass shape: lobulated");
+   			break;
+   		case IRREGULAR:
+   			sprintf(textLabel, "Mass shape: irregular");
+   			break;
+   }
+   gtk_label_set_text(GTK_LABEL(w), textLabel);
+   
+   w = glade_xml_get_widget(g_xml, "caseMargin");
+   switch (roi->shape) {
+   		case SPICULATED:
+   		  	sprintf(textLabel, "Mass margin: spiculated");
+   		  	break;
+   		case ILLDEFINED:
+   		  	sprintf(textLabel, "Mass margin: ill-defined");
+   			break;
+   		case MICROLOBULATED:
+   		  	sprintf(textLabel, "Mass margin: microlobulated");
+   			break;
+   		case CIRCUMSCRIBED:
+   		  	sprintf(textLabel, "Mass margin: circumscribed");
+   			break;
+   		case OBSCURED:
+   		  	sprintf(textLabel, "Mass margin: obscured");
+   			break;
+   }
+   gtk_label_set_text(GTK_LABEL(w), textLabel);
+   
+   w = glade_xml_get_widget(g_xml, "caseBirad");
+   sprintf(textLabel, "BIRAD: %d    1 (benign) - 5 (malignant)",
+   			roi->birad);
+   gtk_label_set_text(GTK_LABEL(w), textLabel);
+
+   w = glade_xml_get_widget(g_xml, "caseDensity");
+   sprintf(textLabel, "Tissue density: %d    1 (fat) - 4  (dense)",
+   			roi->density);
+   gtk_label_set_text(GTK_LABEL(w), textLabel);
+   
+   w = glade_xml_get_widget(g_xml, "caseSubtlety");
+   sprintf(textLabel, "Subtlety: %d    1 (difficult) - 5 (easy)",
+   			roi->subtlety);
+   gtk_label_set_text(GTK_LABEL(w), textLabel);
+}
+
+
 
 static void foreach_selection(GtkIconView *icon_view,
 								GtkTreePath *path,
@@ -142,13 +213,16 @@ static void foreach_selection(GtkIconView *icon_view,
   // set the selection frame on the define tab
   GtkWidget *s = glade_xml_get_widget(g_xml, "selectionFullSize");
   gtk_image_set_from_pixbuf(GTK_IMAGE(s), s_pix);
-
+  
   // find a mass ROI by file name
   if (roi != NULL) {
   	free_roi(roi);
   	roi = NULL;
   }
   roi = get_roi(pix);
+  
+   // set case data on define tab
+   write_case_data(roi);
 }
 
 
