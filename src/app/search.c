@@ -212,6 +212,13 @@ void on_reorderResults_clicked (GtkButton *button,
 	g_debug("reorder results button clicked");
   	
   	GtkWidget *results = glade_xml_get_widget(g_xml, "searchResults");
+  	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(found_items),
+                                         3, GTK_SORT_DESCENDING);
+    
+    // don't reorder new items, if any, until the button is clicked again
+  	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(found_items),
+  								GTK_TREE_SORTABLE_UNSORTED_SORT_COLUMN_ID,
+                                GTK_SORT_DESCENDING);
 }
 
 
