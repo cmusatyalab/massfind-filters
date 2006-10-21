@@ -157,6 +157,8 @@ roi_t *get_roi_record(char *mapFileName, char *studyID) {
       g_debug("found record for study %s: (x,y)=%d,%d", 
 	      studyID, center_x, center_y);
       roi = (roi_t *) malloc(sizeof(roi_t));
+      roi->case_name = malloc(strlen(studyID)+1);
+      strcpy(roi->case_name, studyID);
       roi->full_image_name = NULL;
       roi->roi_image_name = NULL;
       roi->center_x = center_x;
@@ -288,6 +290,7 @@ gboolean remove_roi_attrs(gpointer key, gpointer value, gpointer user_data) {
 
 
 void free_roi(roi_t *r) {
+	free(r->case_name);
     free(r->roi_image_name);
     free(r->full_image_name);
     g_object_unref(r->pixbuf);
