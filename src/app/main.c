@@ -123,7 +123,6 @@ static void setup_thumbnails(GtkIconView *g, gchar *file) {
 
 
 static void setup_results_store(GtkIconView *g) {
-  GtkTreeIter iter;
 
   found_items =
     gtk_list_store_new(4,
