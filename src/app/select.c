@@ -30,7 +30,7 @@
 #include "select.h"
 #include "roimap.h" 
 
-GdkPixbuf *s_pix;
+static GdkPixbuf *s_pix;
 static GdkPixbuf *s_pix_scaled;
 static gfloat scale;
 roi_t *roi = NULL;

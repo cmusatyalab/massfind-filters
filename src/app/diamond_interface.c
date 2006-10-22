@@ -53,6 +53,19 @@ void compute_thumbnail_scale(double *scale, gint *w, gint *h) {
   }
 }
 
+void compute_proportional_scale(gint *w, gint *h, float p_aspect) {
+  float w_aspect = (float) *w / (float) *h;
+	
+	/* is window wider than pixbuf? */
+	if (p_aspect < w_aspect) {
+		/* then calculate width from height */
+		*w = *h * p_aspect;
+	} else {
+		/* else calculate height from width */
+		*h = *w / p_aspect;
+	}
+}
+
 void convert_cairo_argb32_to_pixbuf(guchar *pixels,
 				    gint w, gint h, gint stride) {
   gint x, y;
@@ -251,12 +264,14 @@ gboolean diamond_result_callback(gpointer g_data) {
   int err;
   int w, origW;
   int h, origH;
-  GdkPixbuf *pix, *pix2;
+  GdkPixbuf *pix, *pix2, *pix3;
 
   static time_t last_time;
   int i;
   gchar *title;
   GtkTreeIter iter;
+  GtkTreePath *path;
+  GtkWidget *widget;
   double scale;
   int similarity;
   ls_search_handle_t dr;
@@ -320,7 +335,16 @@ gboolean diamond_result_callback(gpointer g_data) {
   	draw_thumbnail_border(pix2, w, h, 0, 0, 1.0);
   }
   
-  g_debug(" got object %s", title);
+  // create a mid-sized version for search panel
+  widget = glade_xml_get_widget(g_xml, "selectedResult");
+  w = widget->allocation.width;
+  h = widget->allocation.height;
+  float aspect = (float) gdk_pixbuf_get_width(pix) /
+      			(float) gdk_pixbuf_get_height(pix);
+  compute_proportional_scale(&w, &h, aspect);
+  pix3 = gdk_pixbuf_scale_simple(pix, w, h, GDK_INTERP_BILINEAR);
+  
+  g_debug("got returned result %s, similarity %d", title, similarity);
 
   // store
   gtk_list_store_append(found_items, &iter);
@@ -328,11 +352,16 @@ gboolean diamond_result_callback(gpointer g_data) {
 		     0, pix2,
 		     1, title,
 		     2, pix,
-		     3, similarity,
+		     3, pix3,
+		     4, similarity,
 		     -1);
-
+  
+  path = gtk_tree_model_get_path(GTK_TREE_MODEL(found_items), &iter);
+  g_debug("added result at path %s", gtk_tree_path_to_string(path));
+  
   g_object_unref(pix);
   g_object_unref(pix2);
+  g_object_unref(pix3);
 
   err = ls_release_object(dr, obj);
   g_assert(!err);

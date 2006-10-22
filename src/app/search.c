@@ -42,39 +42,6 @@ static void stop_search(void) {
   }
 }
 
-static void draw_investigate_offscreen_items(gint allocation_width,
-					     gint allocation_height) {
-  // clear old scaled pix
-  if (i_pix_scaled != NULL) {
-    g_object_unref(i_pix_scaled);
-    i_pix_scaled = NULL;
-  }
-
-  // is something selected?
-  if (i_pix) {
-  	// scale the image to the allocation size
-	float p_aspect = (float) gdk_pixbuf_get_width(i_pix) /
-  					(float) gdk_pixbuf_get_height(i_pix);
-	int sw = allocation_width;
-	int sh = allocation_height;
-	float w_aspect = (float) sw / (float) sh;
-	
-	/* is window wider than pixbuf? */
-	if (p_aspect < w_aspect) {
- 		/* then calculate width from height */
-		sw = sh * p_aspect;
-	} else {
-		/* else calculate height from width */
-  		sh = sw / p_aspect;
-	}
-	i_pix_scaled = gdk_pixbuf_scale_simple(i_pix,
-				   sw, sh,
-				   GDK_INTERP_BILINEAR);
- 	g_debug("image %x: new scaled %x", i_pix, i_pix_scaled);
- 
-  }
-}
-
 static void foreach_select_result(GtkIconView *icon_view,
 					 GtkTreePath *path,
 					 gpointer data) {
@@ -87,9 +54,11 @@ static void foreach_select_result(GtkIconView *icon_view,
   
   // get the full size image stored for this thumbnail
   gtk_tree_model_get_iter(m, &iter, path);
+  g_debug("selected path is %s", gtk_tree_path_to_string(path));
   gtk_tree_model_get(m, &iter, 
   					1, &title, 
   					2, &i_pix, 
+  					3, &i_pix_scaled,
   					-1);
   g_debug("Image %s selected (%x)", title, i_pix);
  
@@ -213,7 +182,7 @@ void on_reorderResults_clicked (GtkButton *button,
   	
   	GtkWidget *results = glade_xml_get_widget(g_xml, "searchResults");
   	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(found_items),
-                                         3, GTK_SORT_DESCENDING);
+                                         4, GTK_SORT_DESCENDING);
     
     // don't reorder new items, if any, until the button is clicked again
   	gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(found_items),
@@ -228,10 +197,5 @@ void on_searchResults_selection_changed (GtkIconView *view,
 
   // load the image
   gtk_icon_view_selected_foreach(view, foreach_select_result, NULL);
-  
- // draw the offscreen items
-  w = glade_xml_get_widget(g_xml, "selectedResult");
-  draw_investigate_offscreen_items(w->allocation.width,
-				   w->allocation.height);  
 }
 

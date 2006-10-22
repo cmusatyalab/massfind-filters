@@ -125,9 +125,10 @@ static void setup_thumbnails(GtkIconView *g, gchar *file) {
 static void setup_results_store(GtkIconView *g) {
 
   found_items =
-    gtk_list_store_new(4,
+    gtk_list_store_new(5,
 		       GDK_TYPE_PIXBUF,
 		       G_TYPE_STRING,
+		       GDK_TYPE_PIXBUF,
 		       GDK_TYPE_PIXBUF,
 		       G_TYPE_INT);
 
