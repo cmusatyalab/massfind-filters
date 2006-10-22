@@ -78,18 +78,17 @@ void convert_cairo_argb32_to_pixbuf(guchar *pixels,
   }
 }
 
-void draw_thumbnail_border(GdkPixbuf *pix,
-						double image_scale, gint w, gint h) {
-  guchar *pixels = gdk_pixbuf_get_pixels(pix);
-  int stride = gdk_pixbuf_get_rowstride(pix);
-  cairo_surface_t *surface = cairo_image_surface_create_for_data(pixels,
+void draw_thumbnail_border(GdkPixbuf *pix, gint w, gint h, 
+							float r, float g, float b) {
+	guchar *pixels = gdk_pixbuf_get_pixels(pix);
+  	int stride = gdk_pixbuf_get_rowstride(pix);
+  	cairo_surface_t *surface = cairo_image_surface_create_for_data(pixels,
 								 CAIRO_FORMAT_ARGB32,
 								 w, h, stride);
  	cairo_t *cr = cairo_create(surface);
-  	cairo_scale(cr, image_scale, image_scale);
  	cairo_rectangle (cr, 0, 0, w, h);
  	cairo_set_line_width(cr, 10.0);
- 	cairo_set_source_rgb (cr, 1.0, 0, 0);  // in red!
+ 	cairo_set_source_rgb (cr, r, g, b); 
  	cairo_stroke (cr);
 
   	cairo_destroy(cr);
@@ -97,6 +96,19 @@ void draw_thumbnail_border(GdkPixbuf *pix,
 
   	convert_cairo_argb32_to_pixbuf(pixels, w, h, stride);
 }
+
+/*
+ *  mass ROI names are coded to indicate benign or malignant
+ * it would be nice to have an attribute that says this instead...
+ */
+gboolean is_malignant_result(char *name) {
+	gboolean result = FALSE;
+	if (strncmp(name, "TM", 2) == 0)
+		result = TRUE;
+	
+	return result;
+}
+
 
 static void diamond_init(void) {
   int i;
@@ -287,14 +299,8 @@ gboolean diamond_result_callback(gpointer g_data) {
 
   err = lf_ref_attr(obj, "_rgb_image.rgbimage", &len, (unsigned char **) &data);
   g_assert(!err);
-  
   pix = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB,
 				 TRUE, 8, w, h, w*4, NULL, NULL);
- 
-  // create a thumbnail
-  compute_thumbnail_scale(&scale, &w, &h);
-  pix2 = gdk_pixbuf_scale_simple(pix, w, h, GDK_INTERP_BILINEAR);
- // draw_thumbnail_border(pix2, scale, origW, origH);
  
   err = lf_ref_attr(obj, "similarity", &len, (unsigned char **) &data);
   g_assert(!err);
@@ -303,9 +309,17 @@ gboolean diamond_result_callback(gpointer g_data) {
   // get the title - really a file name
   err = lf_ref_attr(obj, "name", &len, (unsigned char **) &data);     
   g_assert(!err);
-  
   title = g_strdup_printf("%s (%d)", (char *) data, similarity);
-		 
+  
+  // create a thumbnail
+  compute_thumbnail_scale(&scale, &w, &h);
+  pix2 = gdk_pixbuf_scale_simple(pix, w, h, GDK_INTERP_BILINEAR);
+  if (is_malignant_result((char *) data)) {
+  	draw_thumbnail_border(pix2, w, h, 1.0, 0, 0);
+  } else {
+  	draw_thumbnail_border(pix2, w, h, 0, 0, 1.0);
+  }
+  
   g_debug(" got object %s", title);
 
   // store
