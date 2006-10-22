@@ -212,7 +212,9 @@ static void foreach_selection(GtkIconView *icon_view,
 
   // set the selection frame on the define tab
   GtkWidget *s = glade_xml_get_widget(g_xml, "selectionFullSize");
-  gtk_image_set_from_pixbuf(GTK_IMAGE(s), s_pix);
+  draw_select_offscreen_items(s->allocation.width,
+			      			s->allocation.height);
+  gtk_image_set_from_pixbuf(GTK_IMAGE(s), s_pix_scaled);
   
   // find a mass ROI by file name
   if (roi != NULL) {

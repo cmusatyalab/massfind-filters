@@ -141,6 +141,22 @@ void on_about1_activate (GtkMenuItem *menuitem, gpointer user_data) {
   gtk_widget_show(glade_xml_get_widget(g_xml, "aboutdialog1"));
 }
 
+void on_zoom_in_activate (GtkMenuItem *menuitem, gpointer user_data) {
+}
+
+void on_zoom_out_activate (GtkMenuItem *menuitem, gpointer user_data) {
+}
+
+void on_best_fit_activate (GtkMenuItem *menuitem, gpointer user_data) {
+}
+
+void on_normal_size_activate (GtkMenuItem *menuitem, gpointer user_data) {
+}
+
+void on_show_masses_activate (GtkMenuItem *menuitem, gpointer user_data) {
+  // get the setting here;
+}
+
 
 GladeXML *g_xml;
 

@@ -23,4 +23,7 @@ extern GladeXML *g_xml;
 extern GtkListStore *saved_search_store;
 extern GtkListStore *found_items;
 
+enum zoomAction { NONE, ZOOM_IN, ZOOM_OUT, NORMAL_SIZE, BEST_FIT };
+// need zoom factors
+
 #endif
