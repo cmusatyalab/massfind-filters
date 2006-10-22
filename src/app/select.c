@@ -224,7 +224,9 @@ static void foreach_selection(GtkIconView *icon_view,
   roi = get_roi(pix);
   
    // set case data on define tab
-   write_case_data(roi);
+   if (roi != NULL) {
+   	write_case_data(roi);
+   }
 }
 
 
