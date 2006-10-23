@@ -136,8 +136,8 @@ int f_eval_boostldm(lf_obj_handle_t ohandle, void *f_data)
 	assert(numFeatures == fconfig->numFeatures);
 
 // use first three features to avoid going negative
-//	for(i=0; i<numFeatures; i++) {
-	for (i = 0; i < 3; i++) {
+	for(i=0; i<numFeatures; i++) {
+//	for (i = 0; i < 3; i++) {
 		sprintf(fname, "bdmf%02d", i);
 		featureLen = MAXFEATURELEN;  // reset, o.w. could be too small
 		err = lf_read_attr(ohandle, fname, &featureLen, featureStr);
@@ -149,6 +149,8 @@ int f_eval_boostldm(lf_obj_handle_t ohandle, void *f_data)
 		// We can hardcode them into the searchlet.
 	    distance += alpha[i] * (fconfig->features[i] != f);
 	}
+	
+	// scale distance to spread out results
 	int similarity = 100*exp(-distance);
 	
 	// save results as attributes
