@@ -1,7 +1,7 @@
 /*
- * FatFind: A Diamond application for adipocyte image exploration
+ * MassFind: A Diamond application for exploration of breast tumors
  *
- * Copyright (c) 2006 Carnegie Mellon University. All rights reserved.
+ * Copyright (c) 2006 Intel Corporation. All rights reserved.
  * Additional copyrights may be listed below.
  *
  * This program and the accompanying materials are made available under
