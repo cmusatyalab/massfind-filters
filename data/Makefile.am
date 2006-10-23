@@ -1,1 +1,1 @@
-SUBDIRS = glade filter
+SUBDIRS = glade
