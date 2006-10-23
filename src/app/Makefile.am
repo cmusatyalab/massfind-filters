@@ -20,7 +20,8 @@ massfind_SOURCES = \
 	roimap.c roimap.h \
 	define.c define.h \
 	search.c search.h \
-	diamond_interface.c diamond_interface.h
+	diamond_interface.c diamond_interface.h \
+	drawutil.c drawutil.h
 
 massfind_LDADD = @glade_LIBS@ 
 

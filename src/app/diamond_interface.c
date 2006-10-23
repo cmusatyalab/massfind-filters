@@ -1,7 +1,7 @@
 /*
- * MASSFIND: A Diamond application for adipocyte image exploration
+ * MassFind: A Diamond application for exploration of breast tumors
  *
- * Copyright (c) 2006 Carnegie Mellon University. All rights reserved.
+ * Copyright (c) 2006 Intel Corporation. All rights reserved.
  * Additional copyrights may be listed below.
  *
  * This program and the accompanying materials are made available under
@@ -17,6 +17,7 @@
 #include "diamond_interface.h"
 #include "massfind.h"
 #include "define.h"
+#include "drawutil.h"
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -24,8 +25,6 @@
 #include <glib/gstdio.h>
 #include <sys/param.h>
 #include <string.h>
-
-#include <cairo.h>
 
 #include "lib_filter.h"
 #include "lib_dconfig.h"
@@ -36,79 +35,6 @@ static gid_list_t diamond_gid_list;
 int total_objects;
 int processed_objects;
 int dropped_objects;
-
-void compute_thumbnail_scale(double *scale, gint *w, gint *h) {
-  float p_aspect = (float) *w / (float) *h;
-
-  if (p_aspect < 1) {
-    /* then calculate width from height */
-    *scale = 150.0 / (double) *h;
-    *h = 150;
-    *w = *h * p_aspect;
-  } else {
-    /* else calculate height from width */
-    *scale = 150.0 / (double) *w;
-    *w = 150;
-    *h = *w / p_aspect;
-  }
-}
-
-void compute_proportional_scale(gint *w, gint *h, float p_aspect) {
-  float w_aspect = (float) *w / (float) *h;
-	
-	/* is window wider than pixbuf? */
-	if (p_aspect < w_aspect) {
-		/* then calculate width from height */
-		*w = *h * p_aspect;
-	} else {
-		/* else calculate height from width */
-		*h = *w / p_aspect;
-	}
-}
-
-void convert_cairo_argb32_to_pixbuf(guchar *pixels,
-				    gint w, gint h, gint stride) {
-  gint x, y;
-
-  // swap around the data
-  // XXX also handle pre-multiplying?
-  for (y = 0; y < h; y++) {
-    for (x = 0; x < w; x++) {
-      // XXX check endian
-#if G_BYTE_ORDER == G_LITTLE_ENDIAN
-      guchar *p = pixels + (stride * y) + (4 * x);
-
-      guchar r = p[2];
-      guchar b = p[0];
-
-      p[0] = r;
-      p[2] = b;
-#else
-      guint *p = (guint *) (pixels + (stride * y) + (4 * x));
-      *p = GUINT32_SWAP_LE_BE(*p);
-#endif
-    }
-  }
-}
-
-void draw_thumbnail_border(GdkPixbuf *pix, gint w, gint h, 
-							float r, float g, float b) {
-	guchar *pixels = gdk_pixbuf_get_pixels(pix);
-  	int stride = gdk_pixbuf_get_rowstride(pix);
-  	cairo_surface_t *surface = cairo_image_surface_create_for_data(pixels,
-								 CAIRO_FORMAT_ARGB32,
-								 w, h, stride);
- 	cairo_t *cr = cairo_create(surface);
- 	cairo_rectangle (cr, 0, 0, w, h);
- 	cairo_set_line_width(cr, 10.0);
- 	cairo_set_source_rgb (cr, r, g, b); 
- 	cairo_stroke (cr);
-
-  	cairo_destroy(cr);
-  	cairo_surface_destroy(surface);
-
-  	convert_cairo_argb32_to_pixbuf(pixels, w, h, stride);
-}
 
 /*
  *  mass ROI names are coded to indicate benign or malignant
