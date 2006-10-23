@@ -29,6 +29,7 @@
 
 #include "select.h"
 #include "roimap.h" 
+#include "drawutil.h"
 
 static GdkPixbuf *s_pix;
 static GdkPixbuf *s_pix_scaled;
@@ -74,39 +75,6 @@ static void draw_select_offscreen_items(gint allocation_width,
   }
 }
 
-void draw_roi_center(GtkWidget *w, int cx, int cy, double scale) {
-
-	cairo_t *cr = gdk_cairo_create(w->window);
-
-	// draw a circle at the mass center	
-	cairo_scale(cr, scale, scale);
-
-	double radius;
- 	radius = 10;
- 	cairo_arc (cr, cx, cy, radius, 0, 2 * M_PI);
- 	
- 	// draw the circle border
- 	cairo_set_line_width(cr, 10.0);
- 	cairo_set_source_rgb (cr, 1.0, 0, 0);  // in red!
- 	cairo_stroke (cr);
-	
-	cairo_destroy(cr);	
-}
-
-
-void draw_roi_border(GtkWidget *w, double x, double y, 
-					double wi, double ht, double scale) {
-
-	cairo_t *cr = gdk_cairo_create(w->window);
-
-	cairo_scale(cr, scale, scale);
-  	cairo_rectangle (cr, x, y, wi, ht);
- 	cairo_set_line_width(cr, 10.0);
- 	cairo_set_source_rgb (cr, 1.0, 0, 0);  // in red!
- 	cairo_stroke (cr);
-	
-	cairo_destroy(cr);	
-}
 
 void write_case_data(roi_t *roi) {
 	
@@ -246,7 +214,19 @@ static void foreach_selection(GtkIconView *icon_view,
   	roi = NULL;
   }
   roi = get_roi(pix);
-  
+
+/*  
+  if (roi && show_masses) {
+  		draw_pixbuf_roi_center(s_pix_scaled, roi->center_x, roi->center_y, scale);
+		double frame_x = roi->center_x - (gdk_pixbuf_get_width(roi->pixbuf)/2);
+		double frame_y = roi->center_y - (gdk_pixbuf_get_height(roi->pixbuf)/2);
+		draw_pixbuf_roi_border(s_pix_scaled, frame_x, frame_y, 
+						gdk_pixbuf_get_width(roi->pixbuf), 
+						gdk_pixbuf_get_height(roi->pixbuf),
+						scale);
+  }
+  */
+
    // set case data on define tab
    if (roi == NULL) {
    	clear_case_data();
@@ -285,7 +265,7 @@ gboolean on_selection_expose_event (GtkWidget *d,
 		    -1, -1,
 		    GDK_RGB_DITHER_NORMAL,
 		    0, 0);
-	if (roi) {
+	if (roi && show_masses) {
   		// draw mass roi seed and border on (scaled) full image
 		draw_roi_center(d, roi->center_x, roi->center_y, scale);
 		double frame_x = roi->center_x - (gdk_pixbuf_get_width(roi->pixbuf)/2);

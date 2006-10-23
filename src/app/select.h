@@ -17,6 +17,8 @@
 
 #include <gtk/gtk.h>
 
+extern gboolean show_masses;
+
 void on_fullImages_selection_changed (GtkIconView *view,
 					     gpointer user_data);
 					     

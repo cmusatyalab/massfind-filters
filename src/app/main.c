@@ -27,6 +27,8 @@
 
 #include "massfind.h"
 
+gboolean show_masses = TRUE;
+
 static void setup_saved_search_store(void) {
   GtkTreeView *v = GTK_TREE_VIEW(glade_xml_get_widget(g_xml,
 						      "definedSearches"));
@@ -154,8 +156,8 @@ void on_best_fit_activate (GtkMenuItem *menuitem, gpointer user_data) {
 void on_normal_size_activate (GtkMenuItem *menuitem, gpointer user_data) {
 }
 
-void on_show_masses_activate (GtkMenuItem *menuitem, gpointer user_data) {
-  // get the setting here;
+void on_show_masses_toggled (GtkCheckMenuItem *menuitem, gpointer user_data) {
+	show_masses = gtk_check_menu_item_get_active(menuitem);
 }
 
 
