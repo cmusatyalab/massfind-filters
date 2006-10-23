@@ -135,7 +135,9 @@ int f_eval_boostldm(lf_obj_handle_t ohandle, void *f_data)
 	numFeatures = atoi((char *)featureStr);
 	assert(numFeatures == fconfig->numFeatures);
 
-	for(i=0; i<numFeatures; i++) {
+// use first three features to avoid going negative
+//	for(i=0; i<numFeatures; i++) {
+	for (i = 0; i < 3; i++) {
 		sprintf(fname, "bdmf%02d", i);
 		featureLen = MAXFEATURELEN;  // reset, o.w. could be too small
 		err = lf_read_attr(ohandle, fname, &featureLen, featureStr);
