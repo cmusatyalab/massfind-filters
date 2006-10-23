@@ -114,30 +114,30 @@ void write_case_data(roi_t *roi) {
    GtkWidget *w;
    
    w = glade_xml_get_widget(g_xml, "caseId");
-   sprintf(textLabel, "Case ID: %s", roi->case_name);
+   strcpy(textLabel, roi->case_name);
    gtk_label_set_text(GTK_LABEL(w), textLabel);
    
    w = glade_xml_get_widget(g_xml, "caseAge");
-   sprintf(textLabel, "Patient age: %d", roi->age);
+   sprintf(textLabel, "%d", roi->age);
    gtk_label_set_text(GTK_LABEL(w), textLabel);
   
    w = glade_xml_get_widget(g_xml, "caseBiopsy");
-   sprintf(textLabel, "Biopsy result: MALIGNANT");
+   strcpy(textLabel, "MALIGNANT");
    gtk_label_set_text(GTK_LABEL(w), textLabel);
    
    w = glade_xml_get_widget(g_xml, "caseShape");
    switch (roi->shape) {
    		case ROUND:
-   		  	sprintf(textLabel, "Mass shape: round");
+   			strcpy(textLabel, "round");
    		  	break;
    		case OVAL:
-   			sprintf(textLabel, "Mass shape: oval");
+   			strcpy(textLabel, "oval");
    			break;
    		case LOBULATED:
-   			sprintf(textLabel, "Mass shape: lobulated");
+   			strcpy(textLabel, "lobulated");
    			break;
    		case IRREGULAR:
-   			sprintf(textLabel, "Mass shape: irregular");
+   		   	strcpy(textLabel, "irregular");
    			break;
    }
    gtk_label_set_text(GTK_LABEL(w), textLabel);
@@ -145,40 +145,64 @@ void write_case_data(roi_t *roi) {
    w = glade_xml_get_widget(g_xml, "caseMargin");
    switch (roi->shape) {
    		case SPICULATED:
-   		  	sprintf(textLabel, "Mass margin: spiculated");
+   		    strcpy(textLabel, "spiculated");
    		  	break;
    		case ILLDEFINED:
-   		  	sprintf(textLabel, "Mass margin: ill-defined");
+   		   	strcpy(textLabel, "ill-defined");
    			break;
    		case MICROLOBULATED:
-   		  	sprintf(textLabel, "Mass margin: microlobulated");
+   		    strcpy(textLabel, "microlobulated");
    			break;
    		case CIRCUMSCRIBED:
-   		  	sprintf(textLabel, "Mass margin: circumscribed");
+   		    strcpy(textLabel, "circumscribed");
    			break;
    		case OBSCURED:
-   		  	sprintf(textLabel, "Mass margin: obscured");
+   		    strcpy(textLabel, "obscured");
    			break;
    }
    gtk_label_set_text(GTK_LABEL(w), textLabel);
    
    w = glade_xml_get_widget(g_xml, "caseBirad");
-   sprintf(textLabel, "BIRAD: %d    1 (benign) - 5 (malignant)",
-   			roi->birad);
+   sprintf(textLabel, "%d    1 (benign) - 5 (malignant)", roi->birad);
    gtk_label_set_text(GTK_LABEL(w), textLabel);
 
    w = glade_xml_get_widget(g_xml, "caseDensity");
-   sprintf(textLabel, "Tissue density: %d    1 (fat) - 4  (dense)",
-   			roi->density);
+   sprintf(textLabel, "%d    1 (fat) - 4  (dense)", roi->density);
    gtk_label_set_text(GTK_LABEL(w), textLabel);
    
    w = glade_xml_get_widget(g_xml, "caseSubtlety");
-   sprintf(textLabel, "Subtlety: %d    1 (difficult) - 5 (easy)",
-   			roi->subtlety);
+   sprintf(textLabel, "%d    1 (difficult) - 5 (easy)", roi->subtlety);
    gtk_label_set_text(GTK_LABEL(w), textLabel);
 }
 
 
+void clear_case_data() {
+   GtkWidget *w;
+   
+   w = glade_xml_get_widget(g_xml, "caseId");
+   gtk_label_set_text(GTK_LABEL(w), "");
+   
+   w = glade_xml_get_widget(g_xml, "caseAge");
+   gtk_label_set_text(GTK_LABEL(w), "");
+  
+   w = glade_xml_get_widget(g_xml, "caseBiopsy");
+   gtk_label_set_text(GTK_LABEL(w), "");
+   
+   w = glade_xml_get_widget(g_xml, "caseShape");
+   gtk_label_set_text(GTK_LABEL(w), "");
+   
+   w = glade_xml_get_widget(g_xml, "caseMargin");
+   gtk_label_set_text(GTK_LABEL(w), "");
+   
+   w = glade_xml_get_widget(g_xml, "caseBirad");
+   gtk_label_set_text(GTK_LABEL(w), "");
+
+   w = glade_xml_get_widget(g_xml, "caseDensity");
+   gtk_label_set_text(GTK_LABEL(w), "");
+   
+   w = glade_xml_get_widget(g_xml, "caseSubtlety");
+   gtk_label_set_text(GTK_LABEL(w), "");
+}
 
 static void foreach_selection(GtkIconView *icon_view,
 								GtkTreePath *path,
@@ -224,7 +248,9 @@ static void foreach_selection(GtkIconView *icon_view,
   roi = get_roi(pix);
   
    // set case data on define tab
-   if (roi != NULL) {
+   if (roi == NULL) {
+   	clear_case_data();
+   } else {
    	write_case_data(roi);
    }
 }
