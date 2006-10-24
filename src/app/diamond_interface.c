@@ -213,7 +213,7 @@ gboolean diamond_result_callback(gpointer g_data) {
     // no results right now
     time_t now = time(NULL);
     if (now > last_time) {
- //     update_stats(dr);
+ 		update_stats(dr);
     }
     last_time = now;
 
