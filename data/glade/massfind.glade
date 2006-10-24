@@ -9,8 +9,8 @@
   <property name="type">GTK_WINDOW_TOPLEVEL</property>
   <property name="window_position">GTK_WIN_POS_NONE</property>
   <property name="modal">False</property>
-  <property name="default_width">800</property>
-  <property name="default_height">600</property>
+  <property name="default_width">1200</property>
+  <property name="default_height">800</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">True</property>
   <property name="decorated">True</property>
@@ -191,7 +191,7 @@
 
 			  <child>
 			    <widget class="GtkViewport" id="viewport3">
-			      <property name="width_request">360</property>
+			      <property name="width_request">670</property>
 			      <property name="visible">True</property>
 			      <property name="shadow_type">GTK_SHADOW_IN</property>
 
@@ -277,6 +277,7 @@
 			  <property name="events">GDK_BUTTON_PRESS_MASK</property>
 			  <signal name="expose_event" handler="on_selection_expose_event" last_modification_time="Mon, 09 Oct 2006 01:09:30 GMT"/>
 			  <signal name="button_press_event" handler="on_selection_button_press_event" last_modification_time="Mon, 09 Oct 2006 15:27:16 GMT"/>
+			  <signal name="configure_event" handler="on_selection_configure_event" last_modification_time="Tue, 24 Oct 2006 18:25:58 GMT"/>
 			</widget>
 		      </child>
 		    </widget>
@@ -368,19 +369,10 @@
 		      <property name="right_padding">0</property>
 
 		      <child>
-			<widget class="GtkViewport" id="viewport2">
+			<widget class="GtkDrawingArea" id="selectionFullSize">
 			  <property name="visible">True</property>
-			  <property name="shadow_type">GTK_SHADOW_IN</property>
-
-			  <child>
-			    <widget class="GtkImage" id="selectionFullSize">
-			      <property name="visible">True</property>
-			      <property name="xalign">0.5</property>
-			      <property name="yalign">0.5</property>
-			      <property name="xpad">0</property>
-			      <property name="ypad">0</property>
-			    </widget>
-			  </child>
+			  <signal name="expose_event" handler="on_selectionFullSize_expose_event" last_modification_time="Tue, 24 Oct 2006 15:07:52 GMT"/>
+			  <signal name="configure_event" handler="on_selectionFullSize_configure_event" last_modification_time="Tue, 24 Oct 2006 18:25:42 GMT"/>
 			</widget>
 		      </child>
 		    </widget>
@@ -1812,6 +1804,7 @@
 			  <property name="xpad">0</property>
 			  <property name="ypad">0</property>
 			  <signal name="expose_event" handler="on_selectedResult_expose_event" last_modification_time="Fri, 20 Oct 2006 13:49:31 GMT"/>
+			  <signal name="configure_event" handler="on_selectedResult_configure_event" last_modification_time="Tue, 24 Oct 2006 18:26:12 GMT"/>
 			</widget>
 		      </child>
 		    </widget>
