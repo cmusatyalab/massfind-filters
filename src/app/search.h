@@ -35,7 +35,9 @@ extern "C" {
   void on_searchResults_selection_changed (GtkIconView *view,
 					   gpointer user_data);
 
-
+  gboolean on_selectedResult_configure_event (GtkWidget *widget,
+					   GdkEventConfigure *event,
+					   gpointer          user_data);
 #ifdef __cplusplus
 }
 #endif

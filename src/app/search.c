@@ -87,7 +87,11 @@ gboolean on_selectedResult_expose_event (GtkWidget *d,
   	return TRUE;
 }
 
-
+gboolean on_selectedResult_configure_event (GtkWidget *widget,
+					   GdkEventConfigure *event,
+					   gpointer          user_data) {
+  return TRUE;
+}
 
 void on_clearSearch_clicked (GtkButton *button,
 			     gpointer   user_data) {
