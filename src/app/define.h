@@ -33,5 +33,13 @@ void on_boostedldmbutton_toggled(GtkToggleButton *togglebutton,
                                  
 void on_qaldmbutton_toggled(GtkToggleButton *togglebutton,
                             gpointer         user_data);
+                            
+gboolean on_selectedFulLSize_expose_event (GtkWidget *d,
+					GdkEventExpose *event,
+					gpointer user_data);
+					
+gboolean on_selectionFullSize_configure_event (GtkWidget *widget,
+					   GdkEventConfigure *event,
+					   gpointer          user_data);
                                 
 #endif

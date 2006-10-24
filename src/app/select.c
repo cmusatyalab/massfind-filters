@@ -31,13 +31,17 @@
 #include "roimap.h" 
 #include "drawutil.h"
 
-static GdkPixbuf *s_pix;
-static GdkPixbuf *s_pix_scaled;
-static gfloat scale;
+extern gboolean show_masses;
+
+GdkPixbuf *s_pix = NULL;
+GdkPixbuf *s_pix_scaled = NULL;
+GdkPixbuf *s_pix_full = NULL;
+gfloat scale;
+gfloat scale_full;
 roi_t *roi = NULL;
 
-static void draw_select_offscreen_items(gint allocation_width,
-					gint allocation_height) {
+static draw_select_offscreen_items(gint allocation_width,
+									gint allocation_height) {
   // clear old scaled pix
   if (s_pix_scaled != NULL) {
     g_object_unref(s_pix_scaled);
@@ -204,28 +208,15 @@ static void foreach_selection(GtkIconView *icon_view,
 
   // set the selection frame on the define tab
   GtkWidget *s = glade_xml_get_widget(g_xml, "selectionFullSize");
-  draw_select_offscreen_items(s->allocation.width,
-			      			s->allocation.height);
-  gtk_image_set_from_pixbuf(GTK_IMAGE(s), s_pix_scaled);
-  
+  gtk_widget_queue_draw(s);
+  draw_select_offscreen_items(s->allocation.width, s->allocation.height);
+ 
   // find a mass ROI by file name
   if (roi != NULL) {
   	free_roi(roi);
   	roi = NULL;
   }
   roi = get_roi(pix);
-
-/*  
-  if (roi && show_masses) {
-  		draw_pixbuf_roi_center(s_pix_scaled, roi->center_x, roi->center_y, scale);
-		double frame_x = roi->center_x - (gdk_pixbuf_get_width(roi->pixbuf)/2);
-		double frame_y = roi->center_y - (gdk_pixbuf_get_height(roi->pixbuf)/2);
-		draw_pixbuf_roi_border(s_pix_scaled, frame_x, frame_y, 
-						gdk_pixbuf_get_width(roi->pixbuf), 
-						gdk_pixbuf_get_height(roi->pixbuf),
-						scale);
-  }
-  */
 
    // set case data on define tab
    if (roi == NULL) {
@@ -246,11 +237,15 @@ void on_mammograms_selection_changed (GtkIconView *view,
 
   // draw the offscreen items
   w = glade_xml_get_widget(g_xml, "selection");
-  draw_select_offscreen_items(w->allocation.width,
-			      w->allocation.height);
-
+  draw_select_offscreen_items(w->allocation.width, w->allocation.height);
 }
 
+gboolean on_selection_configure_event (GtkWidget *widget,
+					   GdkEventConfigure *event,
+					   gpointer          user_data) {
+  draw_select_offscreen_items(event->width, event->height);
+  return TRUE;
+}
 
 
 gboolean on_selection_expose_event (GtkWidget *d,
@@ -265,7 +260,7 @@ gboolean on_selection_expose_event (GtkWidget *d,
 		    -1, -1,
 		    GDK_RGB_DITHER_NORMAL,
 		    0, 0);
-	if (roi && show_masses) {
+	if (roi && roi->pixbuf && show_masses) {
   		// draw mass roi seed and border on (scaled) full image
 		draw_roi_center(d, roi->center_x, roi->center_y, scale);
 		double frame_x = roi->center_x - (gdk_pixbuf_get_width(roi->pixbuf)/2);

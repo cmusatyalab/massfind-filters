@@ -17,8 +17,6 @@
 
 #include <gtk/gtk.h>
 
-extern gboolean show_masses;
-
 void on_fullImages_selection_changed (GtkIconView *view,
 					     gpointer user_data);
 					     
@@ -30,5 +28,8 @@ gboolean on_selectedImage_button_press_event(GtkWidget      *widget,
                                             GdkEventButton *event,
                                             gpointer        user_data);
 									 
+gboolean on_selection_configure_event (GtkWidget *widget,
+					   GdkEventConfigure *event,
+					   gpointer          user_data);
 
 #endif

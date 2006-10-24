@@ -24,19 +24,57 @@
 #include "massfind.h"
 #include "define.h"
 #include "roimap.h"
-
-extern roi_t *roi;
-
-GtkListStore *saved_search_store;
-static GdkPixbuf *c_pix_scaled;
-static float scale;
-int distanceMetric = EUCLIDIAN;
-double threshold;
+#include "drawutil.h"
 
 extern GdkPixbuf *s_pix;
-extern GdkPixbuf *roi_pix;
+extern roi_t *roi;
+extern gboolean show_masses;
+
+GtkListStore *saved_search_store;
+int distanceMetric = EUCLIDIAN;
+double threshold;
+GdkPixbuf *s_pix_full;
+gfloat scale_full;
 
 
+static draw_define_offscreen_items(gint allocation_width, gint allocation_height) {
+	
+  // clear old scaled pix
+  if (s_pix_full != NULL) {
+    g_object_unref(s_pix_full);
+    s_pix_full = NULL;
+  }
+
+  // if something selected?
+  if (s_pix) {
+    float p_aspect =
+      (float) gdk_pixbuf_get_width(s_pix) /
+      (float) gdk_pixbuf_get_height(s_pix);
+    int w = allocation_width;
+    int h = allocation_height;
+    float w_aspect = (float) w / (float) h;
+
+    g_debug("w: %d, h: %d, p_aspect: %g, w_aspect: %g",
+    	    w, h, p_aspect, w_aspect);
+
+    /* is window wider than pixbuf? */
+    if (p_aspect < w_aspect) {
+      /* then calculate width from height */
+      w = h * p_aspect;
+      scale_full = (float) allocation_height
+	/ (float) gdk_pixbuf_get_height(s_pix);
+    } else {
+      /* else calculate height from width */
+      h = w / p_aspect;
+      scale_full = (float) allocation_width
+	/ (float) gdk_pixbuf_get_width(s_pix);
+    }
+
+    s_pix_full = gdk_pixbuf_scale_simple(s_pix,
+					   w, h,
+					   GDK_INTERP_BILINEAR);
+  }
+}
 // center scrolled window on mass ROI?
 
 void on_saveSearchButton_clicked (GtkButton *button,
@@ -117,5 +155,36 @@ void on_define_search_value_changed (GtkRange *range,
   g_debug("threshold value changed to %f", threshold);
 }
 
+gboolean on_selectionFullSize_configure_event (GtkWidget *widget,
+					   GdkEventConfigure *event,
+					   gpointer          user_data) {
+  draw_define_offscreen_items(event->width, event->height);
+  return TRUE;
+}
+
+gboolean on_selectionFullSize_expose_event (GtkWidget *d,
+				    GdkEventExpose *event,
+				    gpointer user_data) {
+    g_debug("selected full size image expose event");
+	if (s_pix) {
+     gdk_draw_pixbuf(d->window,
+		    d->style->fg_gc[GTK_WIDGET_STATE(d)],
+		    s_pix_full,
+		    0, 0, 0, 0,
+		    -1, -1,
+		    GDK_RGB_DITHER_NORMAL,
+		    0, 0);
+	  if (roi && roi->pixbuf && show_masses) {
+  		// draw mass roi seed and border on (scaled) full image
+		draw_roi_center(d, roi->center_x, roi->center_y, scale_full);
+		double frame_x = roi->center_x - (gdk_pixbuf_get_width(roi->pixbuf)/2);
+		double frame_y = roi->center_y - (gdk_pixbuf_get_height(roi->pixbuf)/2);
+		draw_roi_border(d, frame_x, frame_y, 
+						gdk_pixbuf_get_width(roi->pixbuf), 
+						gdk_pixbuf_get_height(roi->pixbuf),
+						scale_full);
+  	}    
+ }
+}
 
 
