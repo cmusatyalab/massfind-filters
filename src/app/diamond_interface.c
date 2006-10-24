@@ -116,9 +116,6 @@ static ls_search_handle_t generic_search (char *filter_spec_name) {
   g_assert(!err);
   g_debug("Searching on %d devices", num_devices);
   
-  err = ls_num_objects(diamond_handle, &num_objects);
-  g_debug("Detected %d objects (so far)", num_objects);
-  
   // append our stuff
   f1 = g_open(MASSFIND_FILTERDIR "/rgb-filter.txt", O_RDONLY);
   if (f1 == -1) {
