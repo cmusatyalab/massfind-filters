@@ -32,6 +32,9 @@
 static struct collection_t collections[MAX_ALBUMS+1] = { { NULL } };
 static gid_list_t diamond_gid_list;
 
+
+
+
 int total_objects;
 int processed_objects;
 int dropped_objects;
@@ -89,22 +92,33 @@ static void diamond_init(void) {
       }
     }
   }
+
 }
 
 static ls_search_handle_t generic_search (char *filter_spec_name) {
   ls_search_handle_t diamond_handle;
   int f1, f2;
   int err;
+  ls_dev_handle_t dev_list[16];
+  int num_devices;
+  int num_objects;
 
   char buf[1];
 
-  diamond_init();
-
+  diamond_init(); 
   diamond_handle = ls_init_search();
 
   err = ls_set_searchlist(diamond_handle, 1, diamond_gid_list.gids);
   g_assert(!err);
-
+  
+  num_devices = 16;
+  err = ls_get_dev_list(diamond_handle, dev_list, &num_devices);
+  g_assert(!err);
+  g_debug("Searching on %d devices", num_devices);
+  
+  err = ls_num_objects(diamond_handle, &num_objects);
+  g_debug("Detected %d objects (so far)", num_objects);
+  
   // append our stuff
   f1 = g_open(MASSFIND_FILTERDIR "/rgb-filter.txt", O_RDONLY);
   if (f1 == -1) {
@@ -138,11 +152,11 @@ static ls_search_handle_t generic_search (char *filter_spec_name) {
 
 static void update_stats(ls_search_handle_t dr) {
   int num_dev;
-  ls_dev_handle_t dev_list[16];
   int i, err, len;
   dev_stats_t *dstats;
   int tobj = 0, sobj = 0, dobj = 0;
   GtkLabel *stats_label = GTK_LABEL(glade_xml_get_widget(g_xml, "statsLabel"));
+  ls_dev_handle_t dev_list[16];
 
   guchar *tmp;
 
@@ -152,16 +166,14 @@ static void update_stats(ls_search_handle_t dr) {
 
   err = ls_get_dev_list(dr, dev_list, &num_dev);
   if (err != 0) {
-    g_error("update states: %d", err);
+    g_error("update stats: %d", err);
   }
 
   for (i = 0; i < num_dev; i++) {
     len = DEV_STATS_SIZE(32);
-    g_debug("getting dev %d", i);
-
     err = ls_get_dev_stats(dr, dev_list[i], dstats, &len);
     if (err) {
-      g_error("Failed to get dev stats");
+      g_error("Failed to get dev stats for device %d", i);
     }
     tobj += dstats->ds_objs_total;
     sobj += dstats->ds_objs_processed;
@@ -270,7 +282,7 @@ gboolean diamond_result_callback(gpointer g_data) {
   compute_proportional_scale(&w, &h, aspect);
   pix3 = gdk_pixbuf_scale_simple(pix, w, h, GDK_INTERP_BILINEAR);
   
-  g_debug("got returned result %s, similarity %d", title, similarity);
+//  g_debug("got returned result %s, similarity %d", title, similarity);
 
   // store
   gtk_list_store_append(found_items, &iter);
@@ -283,7 +295,6 @@ gboolean diamond_result_callback(gpointer g_data) {
 		     -1);
   
   path = gtk_tree_model_get_path(GTK_TREE_MODEL(found_items), &iter);
-  g_debug("added result at path %s", gtk_tree_path_to_string(path));
   
   g_object_unref(pix);
   g_object_unref(pix2);

@@ -63,13 +63,13 @@ roi_t *get_roi_record(char *mapFileName, char *studyID) {
       }
     }
     if (next_token != NULL) {
-      g_debug("image_name %s", next_token);
+ //     g_debug("image_name %s", next_token);
       // image name
       image_name = next_token;
       next_token = strtok(NULL, SEPARATORS);
     }
     if (next_token != NULL) {
-      g_debug("center_x %s", next_token);
+//      g_debug("center_x %s", next_token);
       if (isdigit(next_token[0])) {
 		center_x = atoi(next_token);
       }
@@ -77,42 +77,42 @@ roi_t *get_roi_record(char *mapFileName, char *studyID) {
       next_token = strtok(NULL, SEPARATORS);
     }
     if (next_token != NULL) {
-      g_debug("center_y %s", next_token);
+//      g_debug("center_y %s", next_token);
       if (isdigit(next_token[0])) {
 		center_y = atoi(next_token);
  	    next_token = strtok(NULL, SEPARATORS);
      }
     }
     if (next_token != NULL) {
-    	g_debug("birad %s", next_token);
+ //   	g_debug("birad %s", next_token);
  	    if (isdigit(next_token[0])) {
  	    	birad = atoi(next_token);
  		    next_token = strtok(NULL, SEPARATORS);
      	}
     }
     if (next_token != NULL) {
-    	g_debug("subtlety %s", next_token);
+ //   	g_debug("subtlety %s", next_token);
  	    if (isdigit(next_token[0])) {
  	    	subtlety = atoi(next_token);
  		    next_token = strtok(NULL, SEPARATORS);
      	}
     }
     if (next_token != NULL) {
-    	g_debug("density %s", next_token);
+ //   	g_debug("density %s", next_token);
  	    if (isdigit(next_token[0])) {
  	    	density = atoi(next_token);
  		    next_token = strtok(NULL, SEPARATORS);
      	}
     }
     if (next_token != NULL) {
-    	g_debug("age %s", next_token);
+ //   	g_debug("age %s", next_token);
  	    if (isdigit(next_token[0])) {
  	    	age = atoi(next_token);
  		    next_token = strtok(NULL, SEPARATORS);
      	}
     }
     if (next_token != NULL) {
-    	g_debug("biopsy %s", next_token);
+ //   	g_debug("biopsy %s", next_token);
  	    if (strcmp(next_token, "MALIGNANT") == 0) {
  	    	biopsy = MALIGNANT;
  	    } else {
@@ -121,7 +121,7 @@ roi_t *get_roi_record(char *mapFileName, char *studyID) {
  		next_token = strtok(NULL, SEPARATORS);
     }
     if (next_token != NULL) {
-    	g_debug("shape %s", next_token);    	
+//    	g_debug("shape %s", next_token);    	
  	    if (strcmp(next_token, "ROUND") == 0) {
  	    	shape = ROUND;
  	    } else if (strcmp(next_token, "OVAL") == 0) {
@@ -134,7 +134,7 @@ roi_t *get_roi_record(char *mapFileName, char *studyID) {
  		next_token = strtok(NULL, SEPARATORS);
     }
     if (next_token != NULL) {
-    	g_debug("margin %s", next_token);    	
+ //   	g_debug("margin %s", next_token);    	
  	    if (strcmp(next_token, "SPICULATED") == 0) {
  	    	margin = SPICULATED;
  	    } else if (strcmp(next_token, "ILLDEINFED") == 0) {
@@ -154,8 +154,8 @@ roi_t *get_roi_record(char *mapFileName, char *studyID) {
 
     // check study id for match
     if (strncmp(image_name, studyID, strlen(studyID)) == 0) {
-      g_debug("found record for study %s: (x,y)=%d,%d", 
-	      studyID, center_x, center_y);
+ //     g_debug("found record for study %s: (x,y)=%d,%d", 
+//	      studyID, center_x, center_y);
       roi = (roi_t *) malloc(sizeof(roi_t));
       roi->case_name = malloc(strlen(studyID)+1);
       strcpy(roi->case_name, studyID);
@@ -197,7 +197,7 @@ void get_roi_attrs(char *attrFileName, GHashTable *ht) {
     	v = malloc(MAXATTRLEN);
     	strncpy(k, attr, MAXATTRLEN);
     	strncpy(v, value, MAXATTRLEN);
-    	g_debug("attribute %s = %s", k, v);
+ //   	g_debug("attribute %s = %s", k, v);
     	g_hash_table_insert(ht, k, v);
     }
   }
