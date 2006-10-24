@@ -28,6 +28,7 @@
 #include <string.h>
 
 #include "select.h"
+#include "define.h"
 #include "roimap.h" 
 #include "drawutil.h"
 
@@ -40,7 +41,7 @@ gfloat scale;
 gfloat scale_full;
 roi_t *roi = NULL;
 
-static draw_select_offscreen_items(gint allocation_width,
+void draw_select_offscreen_items(gint allocation_width,
 									gint allocation_height) {
   // clear old scaled pix
   if (s_pix_scaled != NULL) {
@@ -209,7 +210,7 @@ static void foreach_selection(GtkIconView *icon_view,
   // set the selection frame on the define tab
   GtkWidget *s = glade_xml_get_widget(g_xml, "selectionFullSize");
   gtk_widget_queue_draw(s);
-  draw_select_offscreen_items(s->allocation.width, s->allocation.height);
+  draw_define_offscreen_items(s->allocation.width, s->allocation.height);
  
   // find a mass ROI by file name
   if (roi != NULL) {

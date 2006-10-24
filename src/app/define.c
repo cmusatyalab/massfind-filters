@@ -37,7 +37,7 @@ GdkPixbuf *s_pix_full;
 gfloat scale_full;
 
 
-static draw_define_offscreen_items(gint allocation_width, gint allocation_height) {
+void draw_define_offscreen_items(gint allocation_width, gint allocation_height) {
 	
   // clear old scaled pix
   if (s_pix_full != NULL) {
