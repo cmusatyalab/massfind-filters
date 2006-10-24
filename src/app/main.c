@@ -158,6 +158,11 @@ void on_normal_size_activate (GtkMenuItem *menuitem, gpointer user_data) {
 
 void on_show_masses_toggled (GtkCheckMenuItem *menuitem, gpointer user_data) {
 	show_masses = gtk_check_menu_item_get_active(menuitem);
+	
+	GtkWidget *w = glade_xml_get_widget(g_xml, "selection");
+  	gtk_widget_queue_draw(w);
+  	w = glade_xml_get_widget(g_xml, "selectionFullSize");
+  	gtk_widget_queue_draw(w);
 }
 
 
