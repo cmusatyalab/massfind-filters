@@ -67,6 +67,5 @@ src/app/Makefile
 src/filter/Makefile
 data/Makefile
 data/glade/Makefile
-data/filter/Makefile
 ])
 
