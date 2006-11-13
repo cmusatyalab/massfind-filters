@@ -32,6 +32,7 @@ typedef struct {
   int shape;
   int margin;
   GdkPixbuf *pixbuf;
+  GdkPixbuf *pixbuf_scaled;
   GHashTable *attrs;
 } roi_t;
 

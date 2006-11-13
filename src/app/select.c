@@ -41,46 +41,6 @@ gfloat scale;
 gfloat scale_full;
 roi_t *roi = NULL;
 
-void draw_select_offscreen_items(gint allocation_width,
-									gint allocation_height) {
-  // clear old scaled pix
-  if (s_pix_scaled != NULL) {
-    g_object_unref(s_pix_scaled);
-    s_pix_scaled = NULL;
-  }
-
-  // if something selected?
-  if (s_pix) {
-    float p_aspect =
-      (float) gdk_pixbuf_get_width(s_pix) /
-      (float) gdk_pixbuf_get_height(s_pix);
-    int w = allocation_width;
-    int h = allocation_height;
-    float w_aspect = (float) w / (float) h;
-
-    g_debug("w: %d, h: %d, p_aspect: %g, w_aspect: %g",
-    	    w, h, p_aspect, w_aspect);
-
-    /* is window wider than pixbuf? */
-    if (p_aspect < w_aspect) {
-      /* then calculate width from height */
-      w = h * p_aspect;
-      scale = (float) allocation_height
-	/ (float) gdk_pixbuf_get_height(s_pix);
-    } else {
-      /* else calculate height from width */
-      h = w / p_aspect;
-      scale = (float) allocation_width
-	/ (float) gdk_pixbuf_get_width(s_pix);
-    }
-
-    s_pix_scaled = gdk_pixbuf_scale_simple(s_pix,
-					   w, h,
-					   GDK_INTERP_BILINEAR);
-  }
-}
-
-
 void write_case_data(roi_t *roi) {
 	
    char textLabel[80];
@@ -177,6 +137,7 @@ void clear_case_data() {
    gtk_label_set_text(GTK_LABEL(w), "");
 }
 
+
 static void foreach_selection(GtkIconView *icon_view,
 								GtkTreePath *path,
 					      		gpointer data) {
@@ -238,13 +199,22 @@ void on_mammograms_selection_changed (GtkIconView *view,
 
   // draw the offscreen items
   w = glade_xml_get_widget(g_xml, "selection");
-  draw_select_offscreen_items(w->allocation.width, w->allocation.height);
+  draw_select_offscreen_items(w->allocation.width, w->allocation.height,
+  								s_pix, &s_pix_scaled, &scale);
+  if (roi != NULL) {
+  	gfloat pscale;
+  	w = glade_xml_get_widget(g_xml, "queryImage");
+  	draw_select_offscreen_items(w->allocation.width, w->allocation.height,
+  								roi->pixbuf, &roi->pixbuf_scaled, &pscale);
+  }
 }
+
 
 gboolean on_selection_configure_event (GtkWidget *widget,
 					   GdkEventConfigure *event,
 					   gpointer          user_data) {
-  draw_select_offscreen_items(event->width, event->height);
+  draw_select_offscreen_items(event->width, event->height,
+  								s_pix, &s_pix_scaled, &scale);
   return TRUE;
 }
 

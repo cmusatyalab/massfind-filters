@@ -171,4 +171,41 @@ void draw_pixbuf_roi_border(GdkPixbuf *p, double x, double y,
 	cairo_destroy(cr);	
 }
 
+void draw_scaled_image(gint allocation_width, gint allocation_height,
+						GdkPixbuf *pix, GdkPixbuf **spix, gfloat *sc) {
+  // clear old scaled pix
+  if (*spix != NULL) {
+    g_object_unref(*spix);
+    *spix = NULL;
+  }
+
+  // if something selected?
+  if (pix != NULL) {
+    float p_aspect =
+      (float) gdk_pixbuf_get_width(pix) /
+      (float) gdk_pixbuf_get_height(pix);
+    int w = allocation_width;
+    int h = allocation_height;
+    float w_aspect = (float) w / (float) h;
+
+    g_debug("w: %d, h: %d, p_aspect: %g, w_aspect: %g",
+    	    w, h, p_aspect, w_aspect);
+
+    /* is window wider than pixbuf? */
+    if (p_aspect < w_aspect) {
+      /* then calculate width from height */
+      w = h * p_aspect;
+      *sc = (float) allocation_height
+				/ (float) gdk_pixbuf_get_height(pix);
+    } else {
+      /* else calculate height from width */
+      h = w / p_aspect;
+      *sc = (float) allocation_width
+				/ (float) gdk_pixbuf_get_width(pix);
+    }
+
+    *spix = gdk_pixbuf_scale_simple(pix, w, h,
+					   GDK_INTERP_BILINEAR);
+  }
+}
 

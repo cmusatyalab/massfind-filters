@@ -24,6 +24,9 @@
 #include "massfind.h"
 #include "search.h"
 #include "diamond_interface.h"
+#include "roimap.h"
+
+extern roi_t *roi;
 
 GtkListStore *found_items;
 
@@ -73,7 +76,6 @@ gboolean on_selectedResult_expose_event (GtkWidget *d,
 	g_debug("selected result expose event");
  
   	if (i_pix) {	
-  		g_debug("drawing image %x, scaled %x", i_pix, i_pix_scaled);
 		gdk_draw_pixbuf(d->window,
 		    d->style->fg_gc[GTK_WIDGET_STATE(d)],
 		    i_pix_scaled,
@@ -90,7 +92,44 @@ gboolean on_selectedResult_expose_event (GtkWidget *d,
 gboolean on_selectedResult_configure_event (GtkWidget *widget,
 					   GdkEventConfigure *event,
 					   gpointer          user_data) {
-  return TRUE;
+	if (i_pix) {
+		gfloat scale;
+		draw_scaled_image(event->width, event->height,
+  							i_pix, &i_pix_scaled, &scale);
+	}
+  	return TRUE;
+}
+
+gboolean on_queryImage_expose_event (GtkWidget *d,
+					 GdkEventExpose *event,
+					 gpointer user_data) {
+
+	g_debug("query image expose event");
+ 
+  	if (roi && roi->pixbuf_scaled) {	
+		gdk_draw_pixbuf(d->window,
+		    d->style->fg_gc[GTK_WIDGET_STATE(d)],
+		    roi->pixbuf_scaled,
+		    0, 0, 
+		    d->allocation.x, d->allocation.y,
+		    -1, -1,
+		    GDK_RGB_DITHER_NORMAL,
+		    0, 0);
+  	}
+
+  	return TRUE;
+}
+
+gboolean on_queryImage_configure_event (GtkWidget *widget,
+					   GdkEventConfigure *event,
+					   gpointer          user_data) {
+					   	
+	if (roi && roi->pixbuf) {
+  		gfloat scale;
+  		draw_select_offscreen_items(event->width, event->height,
+  							  roi->pixbuf, &roi->pixbuf_scaled, &scale);
+	}
+  	return TRUE;
 }
 
 void on_clearSearch_clicked (GtkButton *button,

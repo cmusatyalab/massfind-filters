@@ -171,6 +171,7 @@ roi_t *get_roi_record(char *mapFileName, char *studyID) {
       roi->shape = shape;
       roi->margin = margin;
       roi->pixbuf = NULL;
+      roi->pixbuf_scaled = NULL;
       roi->attrs = NULL;
       break;
     }
@@ -294,6 +295,7 @@ void free_roi(roi_t *r) {
     free(r->roi_image_name);
     free(r->full_image_name);
     g_object_unref(r->pixbuf);
+    g_object_unref(r->pixbuf_scaled);
     g_hash_table_foreach_remove(r->attrs, remove_roi_attrs, NULL);
     g_hash_table_destroy(r->attrs);
     free(r);

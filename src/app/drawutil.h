@@ -34,5 +34,8 @@ void draw_roi_border(GtkWidget *w, double x, double y,
 					
 void draw_pixbuf_roi_border(GdkPixbuf *p, double x, double y, 
 					double wi, double ht, double scale);
+					
+void draw_scaled_image(gint width, gint height,
+						GdkPixbuf *pix, GdkPixbuf **spix, gfloat *sc);
 
 #endif /*DRAWUTIL_H_*/
