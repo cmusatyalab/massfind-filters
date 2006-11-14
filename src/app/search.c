@@ -22,9 +22,9 @@
 #include <math.h>
 
 #include "massfind.h"
-#include "search.h"
 #include "diamond_interface.h"
 #include "roimap.h"
+#include "drawutil.h"
 
 extern roi_t *roi;
 
@@ -126,8 +126,8 @@ gboolean on_queryImage_configure_event (GtkWidget *widget,
 					   	
 	if (roi && roi->pixbuf) {
   		gfloat scale;
-  		draw_select_offscreen_items(event->width, event->height,
-  							  roi->pixbuf, &roi->pixbuf_scaled, &scale);
+  		draw_scaled_image(event->width, event->height,
+  						  roi->pixbuf, &roi->pixbuf_scaled, &scale);
 	}
   	return TRUE;
 }

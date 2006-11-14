@@ -199,12 +199,12 @@ void on_mammograms_selection_changed (GtkIconView *view,
 
   // draw the offscreen items
   w = glade_xml_get_widget(g_xml, "selection");
-  draw_select_offscreen_items(w->allocation.width, w->allocation.height,
+  draw_scaled_image(w->allocation.width, w->allocation.height,
   								s_pix, &s_pix_scaled, &scale);
   if (roi != NULL) {
   	gfloat pscale;
   	w = glade_xml_get_widget(g_xml, "queryImage");
-  	draw_select_offscreen_items(w->allocation.width, w->allocation.height,
+  	draw_scaled_image(w->allocation.width, w->allocation.height,
   								roi->pixbuf, &roi->pixbuf_scaled, &pscale);
   }
 }
@@ -213,8 +213,7 @@ void on_mammograms_selection_changed (GtkIconView *view,
 gboolean on_selection_configure_event (GtkWidget *widget,
 					   GdkEventConfigure *event,
 					   gpointer          user_data) {
-  draw_select_offscreen_items(event->width, event->height,
-  								s_pix, &s_pix_scaled, &scale);
+  draw_scaled_image(event->width, event->height, s_pix, &s_pix_scaled, &scale);
   return TRUE;
 }
 
