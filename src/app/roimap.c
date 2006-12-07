@@ -245,7 +245,8 @@ roi_t *get_roi(char *path) {
     struct dirent *de;
     while ((de = readdir(dp)) != NULL) {
       if (strstr(de->d_name, studyID) &&
-	 	  strncmp(de->d_name, studyID, strlen(studyID))) {
+	 	  strncmp(de->d_name, studyID, strlen(studyID)) &&
+	 	  !strstr(de->d_name, ".text_attr")) {
 		strcat(imageName, de->d_name);
 
 		roi->roi_image_name = (char *) malloc(strlen(imageName)+1);
