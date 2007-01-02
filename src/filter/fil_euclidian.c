@@ -19,7 +19,6 @@
 #include <stdio.h>
 
 #include "lib_filter.h"
-#include "upmc_features.h"
 #include "roi_features.h"
 #include "fil_euclidian.h"
 
