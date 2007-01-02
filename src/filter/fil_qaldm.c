@@ -17,9 +17,9 @@
 #include <assert.h>
 
 #include "lib_filter.h"
+#include "roi_features.h"
 #include "fil_qaldm.h"
 
-#define MAXFEATURELEN 80
 
 int f_init_qaldm(int numarg, char **args, int blob_len,
                     void *blob, const char *fname, void **data)

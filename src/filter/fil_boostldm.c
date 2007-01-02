@@ -19,9 +19,9 @@
 #include <stdio.h>
 
 #include "lib_filter.h"
+#include "upmc_features.h"
+#include "roi_features.h"
 #include "fil_boostldm.h"
-
-#define MAXFEATURELEN 80
 
 float alpha[] = {
 	0.007374,
@@ -76,7 +76,6 @@ float alpha[] = {
 	0.000724,
 };
 
-	
 
 int f_init_boostldm(int numarg, char **args, int blob_len,
                     void *blob, const char *fname, void **data)
@@ -124,18 +123,18 @@ int f_eval_boostldm(lf_obj_handle_t ohandle, void *f_data)
 	int numFeatures;
 	float f;
 	float distance = 0;
-	char fname[7];
+	char fname[MAXFNAMELEN];
 	
 	lf_log(LOGL_TRACE, "f_eval_boostldm: enter");
 	
 	// extract the features for this object
-	err = lf_read_attr(ohandle, "numbdmf", &featureLen, featureStr);
+	err = lf_read_attr(ohandle, NUM_BDMF, &featureLen, featureStr);
 	assert(err == 0);
 	numFeatures = atoi((char *)featureStr);
 	assert(numFeatures == fconfig->numFeatures);
 
 	for(i=0; i<numFeatures; i++) {
-		sprintf(fname, "bdmf%02d", i);
+		sprintf(fname, "%s%02d", BDMF_PREFIX, i);
 		featureLen = MAXFEATURELEN;  // reset, o.w. could be too small
 		err = lf_read_attr(ohandle, fname, &featureLen, featureStr);
 		assert(err == 0);
