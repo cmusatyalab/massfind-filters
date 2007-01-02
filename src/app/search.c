@@ -19,16 +19,24 @@
 #include <gtk/gtk.h>
 #include <glade/glade.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
+#include <sys/param.h>
 
 #include "massfind.h"
 #include "diamond_interface.h"
 #include "roimap.h"
 #include "drawutil.h"
+#include "roi_features.h"
+#include "upmc_features.h"
+
+#define QUERY_FEATURE_SUFFIX "q"
+#define RESULT_FEATURE_SUFFIX "r"
 
 extern roi_t *roi;
 
 GtkListStore *found_items;
+GHashTable *result_features;
 
 static GdkPixbuf *i_pix;
 static GdkPixbuf *i_pix_scaled;
@@ -54,6 +62,7 @@ static void foreach_select_result(GtkIconView *icon_view,
   GtkTreeModel *m = gtk_icon_view_get_model(icon_view);
   GtkWidget *w;
   gchar *title;
+  char roiName[MAXPATHLEN];
   
   // get the full size image stored for this thumbnail
   gtk_tree_model_get_iter(m, &iter, path);
@@ -64,6 +73,18 @@ static void foreach_select_result(GtkIconView *icon_view,
   					3, &i_pix_scaled,
   					-1);
   g_debug("Image %s selected (%x)", title, i_pix);
+  
+  // get features for this ROI
+  strcpy(roiName, title);
+  char *space = strrchr(roiName, ' ');
+  if (space != NULL)
+  	space[0] = '\0';
+  if (result_features != NULL) {
+  	   g_hash_table_foreach_remove(result_features, remove_roi_attrs, NULL);
+  	   g_hash_table_destroy(result_features);
+  }
+  result_features = g_hash_table_new(g_str_hash, g_str_equal);
+  get_roi_features(roiName, result_features);
  
   w = glade_xml_get_widget(g_xml, "selectedResult");
   gtk_widget_queue_draw(w);  
@@ -137,7 +158,6 @@ void on_clearSearch_clicked (GtkButton *button,
   // buttons
   GtkWidget *stopSearch = glade_xml_get_widget(g_xml, "stopSearch");
   GtkWidget *startSearch = glade_xml_get_widget(g_xml, "startSearch");
-
   gtk_widget_set_sensitive(stopSearch, FALSE);
   gtk_widget_set_sensitive(startSearch, TRUE);
 
@@ -155,8 +175,7 @@ void on_clearSearch_clicked (GtkButton *button,
   gtk_widget_queue_draw(glade_xml_get_widget(g_xml, "selectedResult"));
 }
 
-void on_stopSearch_clicked (GtkButton *button,
-			    gpointer user_data) {
+void on_stopSearch_clicked (GtkButton *button, gpointer user_data) {
   GtkWidget *stopSearch = glade_xml_get_widget(g_xml, "stopSearch");
   GtkWidget *startSearch = glade_xml_get_widget(g_xml, "startSearch");
   gtk_widget_set_sensitive(stopSearch, FALSE);
@@ -166,8 +185,7 @@ void on_stopSearch_clicked (GtkButton *button,
   stop_search();
 }
 
-void on_startSearch_clicked (GtkButton *button,
-			     gpointer   user_data) {
+void on_startSearch_clicked (GtkButton *button, gpointer user_data) {
   // get the selected search
   GtkTreeIter s_iter;
   GtkTreeSelection *selection =
@@ -182,22 +200,26 @@ void on_startSearch_clicked (GtkButton *button,
 				      &s_iter)) {
     gdouble threshold;
   	int metric;
-  	int n;
-    float *f;
+  	int nv, ns;
+    float *fv, *fs;
     GtkWidget *stopSearch = glade_xml_get_widget(g_xml, "stopSearch");
-
+	gdouble size_dev, circ_dev;
 
     g_debug("saved_search_store: %p", model);
     gtk_tree_model_get(model,
 		       &s_iter,
 		       1, &metric,
 		       2, &threshold,
-		       3, &n,
-		       4, &f,
+		       3, &nv,
+		       4, &fv,
+		       5, &ns,
+		       6, &fs,
+		       7, &size_dev,
+		       8, &circ_dev,
 		       -1);
 
-	g_debug("starting search, metric %d, #features = %d, threshold %f", 
-			metric, n, threshold);
+	g_debug("starting search, metric %d, %d features, threshold %f size-dev %f circ-dev %f", 
+			metric, ns, threshold, size_dev, circ_dev);
 
     // reset stats
     total_objects = 0;
@@ -205,7 +227,9 @@ void on_startSearch_clicked (GtkButton *button,
     dropped_objects = 0;
 
     // diamond
-	dr = diamond_similarity_search(metric, (int) threshold, n, f);
+	dr = diamond_similarity_search(metric, (int) threshold, 
+									nv, fv, ns, fs, 
+									size_dev, circ_dev);
 
     // take the handle, put it into the idle callback to get
     // the results?
@@ -240,5 +264,58 @@ void on_searchResults_selection_changed (GtkIconView *view,
 
   // load the image
   gtk_icon_view_selected_foreach(view, foreach_select_result, NULL);
+}
+
+void write_feature_data(GHashTable *features, char *suffix) {
+
+   char labelName[10], fstr[10];
+   char textLabel[80];
+   GtkWidget *w;
+   int i;
+   
+   for (i = 0; i < NUM_UPMC_FEATURES; i++) {
+   	   	sprintf(labelName, "upmc%02d%s", i, suffix);
+   	   	w = glade_xml_get_widget(g_xml, labelName);
+  		sprintf(fstr, "%s%02d", UPMC_PREFIX, i);
+  		sprintf(textLabel, "%s", g_hash_table_lookup(features, fstr));
+  		gtk_label_set_text(GTK_LABEL(w), textLabel);
+   }
+}
+
+void clear_feature_data(char *suffix) {
+	char labelName[10];
+    GtkWidget *w;
+    int i;
+  	 
+    for (i = 0; i < NUM_UPMC_FEATURES; i++) {
+		sprintf(labelName, "upmc%02d%s", i, suffix);
+   	   	w = glade_xml_get_widget(g_xml, labelName);
+		gtk_label_set_text(GTK_LABEL(w), "");
+	}
+}
+
+
+gboolean on_queryImageEventBox_button_press_event(GtkWidget *widget,
+					 GdkEventButton *event,
+					 gpointer        user_data) {
+  g_debug("query image button press event");
+
+  write_feature_data(roi->attrs, QUERY_FEATURE_SUFFIX);
+  gtk_widget_show_all(glade_xml_get_widget(g_xml, "queryFeatureWindow"));
+  
+  return TRUE;
+
+}
+
+gboolean on_selectedResultEventBox_button_press_event(GtkWidget *widget,
+					 GdkEventButton *event,
+					 gpointer        user_data) {
+  g_debug("selected result button press event");
+  
+  write_feature_data(result_features, RESULT_FEATURE_SUFFIX);
+  gtk_widget_show_all(glade_xml_get_widget(g_xml, "resultFeatureWindow"));
+  
+  return TRUE;
+
 }
 

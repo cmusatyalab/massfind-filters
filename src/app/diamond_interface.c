@@ -306,8 +306,12 @@ gboolean diamond_result_callback(gpointer g_data) {
 
 ls_search_handle_t diamond_similarity_search(int searchType, 
 											 double threshold,
-											 int numFeatures, 
-											 float *features) {
+											 int numvf, 
+											 float *vf,
+											 int numsf,
+											 float *sf,
+											 double size_dev,
+											 double circ_dev) {
   ls_search_handle_t dr;
   int fd;
   int i;
@@ -324,8 +328,22 @@ ls_search_handle_t diamond_similarity_search(int searchType,
   f = fdopen(fd, "a");
   g_return_val_if_fail(f, NULL);
   strcpy(filter_name, DIAMOND_FILTERDIR);
-  
-  switch (searchType) {
+
+  fprintf(f, "\n\n"
+	  "FILTER visual\n"
+	  "THRESHOLD 1\n"
+	  "EVAL_FUNCTION  f_eval_visual\n"
+	  "INIT_FUNCTION  f_init_visual\n"
+	  "FINI_FUNCTION  f_fini_visual\n");
+ 
+  // write the features from the source image
+  for (i = 0; i < numvf; i++) {
+  	fprintf(f, "ARG  %f  # feature %i\n", vf[i], i);
+  }
+  fprintf(f, "ARG  %f  # size deviation\n", size_dev);
+  fprintf(f, "ARG  %f  # circularity deviation\n", circ_dev);
+ 
+   switch (searchType) {
   	case EUCLIDIAN:
   	fprintf(f, "\n\n"
 	  "FILTER euclidian\n"
@@ -361,8 +379,8 @@ ls_search_handle_t diamond_similarity_search(int searchType,
   }
   
   // write the features from the source image
-  for (i = 0; i < numFeatures; i++) {
-  	fprintf(f, "ARG  %f  # feature %i\n", features[i], i);
+  for (i = 0; i < numsf; i++) {
+  	fprintf(f, "ARG  %f  # feature %i\n", sf[i], i);
   }
   
   fprintf(f, "REQUIRES  RGB # dependencies\n"
@@ -376,6 +394,11 @@ ls_search_handle_t diamond_similarity_search(int searchType,
   err = ls_add_filter_file(dr, DEV_ISA_IA32, filter_name);
   g_assert(!err);
 
+  strcpy(filter_name, DIAMOND_FILTERDIR);
+  strcat(filter_name, "/libfil_visual.a");
+  err = ls_add_filter_file(dr, DEV_ISA_IA32, filter_name);
+  g_assert(!err);
+  
   // now close
   fclose(f);
   g_free(name_used);

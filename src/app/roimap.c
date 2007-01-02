@@ -20,7 +20,10 @@
 #include <dirent.h>
 #include <sys/param.h>
 
+#include "diamond_consts.h"
+
 #include "roimap.h"
+#include "massfind.h"
 
 #define MAPFILENAME "Truthfile.txt"
 #define MAXLINELEN 256
@@ -198,7 +201,6 @@ void get_roi_attrs(char *attrFileName, GHashTable *ht) {
     	v = malloc(MAXATTRLEN);
     	strncpy(k, attr, MAXATTRLEN);
     	strncpy(v, value, MAXATTRLEN);
- //   	g_debug("attribute %s = %s", k, v);
     	g_hash_table_insert(ht, k, v);
     }
   }
@@ -207,6 +209,24 @@ void get_roi_attrs(char *attrFileName, GHashTable *ht) {
   return;
 }
 
+void get_roi_features(char *roiName, GHashTable *ht) {
+	char attrFileName[MAXPATHLEN];
+	
+	// find the full pathname of the text attribute file
+	char *p = &attrFileName[0];
+	get_data_directory(&p);
+    DIR *dp = opendir(attrFileName);
+    struct dirent *de;
+    while ((de = readdir(dp)) != NULL) {
+      if (!strncmp(de->d_name, roiName, strlen(roiName)) &&
+      	  strstr(de->d_name, TEXT_ATTR_EXT)) {
+			strcat(attrFileName, de->d_name);
+	 	  }
+    }
+	closedir(dp);
+	get_roi_attrs(attrFileName, ht);
+	return;
+}
 
 roi_t *get_roi(char *path) {
 
@@ -240,13 +260,14 @@ roi_t *get_roi(char *path) {
   
   if (roi = get_roi_record(mapFileName, studyID)) {
 
-    // look for file names with the study ID
+    // find the full pathname of the image file
     DIR *dp = opendir(imageName);
     struct dirent *de;
     while ((de = readdir(dp)) != NULL) {
+      // the study ID is a non-starting fragment of the image file name
       if (strstr(de->d_name, studyID) &&
 	 	  strncmp(de->d_name, studyID, strlen(studyID)) &&
-	 	  !strstr(de->d_name, ".text_attr")) {
+	 	  !strstr(de->d_name, TEXT_ATTR_EXT)) {
 		strcat(imageName, de->d_name);
 
 		roi->roi_image_name = (char *) malloc(strlen(imageName)+1);

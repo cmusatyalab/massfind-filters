@@ -3,8 +3,9 @@
 gladedir = $(datadir)/massfind/glade
 filterdir = $(datadir)/massfind/filter
 libfilterdir = ${DIAMOND_PREFIX}/lib
+commondir = $(top_srcdir)/src/common
 
-INCLUDES = -I$(gladesrcs) \
+INCLUDES = -I$(commondir) \
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\" \
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
 	-DMASSFIND_GLADEDIR=\""$(gladedir)"\" \

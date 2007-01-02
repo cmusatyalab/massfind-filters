@@ -26,4 +26,6 @@ extern GtkListStore *found_items;
 enum zoomAction { NONE, ZOOM_IN, ZOOM_OUT, NORMAL_SIZE, BEST_FIT };
 // need zoom factors
 
+void get_data_directory(char **dirp);
+
 #endif

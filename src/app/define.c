@@ -25,6 +25,7 @@
 #include "define.h"
 #include "roimap.h"
 #include "drawutil.h"
+#include "roi_features.h"
 
 extern GdkPixbuf *s_pix;
 extern roi_t *roi;
@@ -80,35 +81,48 @@ void draw_define_offscreen_items(gint allocation_width, gint allocation_height) 
 void on_saveSearchButton_clicked (GtkButton *button,
 				  gpointer   user_data) {
   GtkTreeIter iter;
-  float *features = NULL;
-  int num_features;
+  float *vfeatures = NULL;
+  float *sfeatures = NULL;
+  int numvf, numsf;
   int i;
-  const char uprefix[] = "upmc";
-  const char bprefix[] = "bdmf";
-  char *prefix;
-  char nf[8] = "num";
-  char fstr[7];
+  char prefix[MAXFNAMELEN];
+  char nf[MAXFNAMELEN];
+  char fstr[MAXFNAMELEN];
   
   const gchar *save_name =
     gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(g_xml, "searchName")));
-  gdouble t = gtk_range_get_value(GTK_RANGE(glade_xml_get_widget(g_xml, "distanceThreshold")));
- 
   g_debug("making new search: %s", save_name);
+
+  gdouble t = gtk_range_get_value(GTK_RANGE(glade_xml_get_widget(g_xml, "distanceThreshold")));
+  gdouble s = gtk_range_get_value(GTK_RANGE(glade_xml_get_widget(g_xml, "sizeDeviation")));
+  gdouble c = gtk_range_get_value(GTK_RANGE(glade_xml_get_widget(g_xml, "circularityDeviation")));
   
   // pick out the relevant ROI features, depending on the search
   if (distanceMetric == EUCLIDIAN || 
   	  distanceMetric == QALDM) {  // both of these euclidian for now
-  	prefix = uprefix;
+  	strcpy(prefix, EDMF_PREFIX);
+  	strcpy(nf, NUM_EDMF);
   } else {  // boost LDM
-  	prefix = bprefix;
+  	strcpy(prefix, BDMF_PREFIX);
+  	strcpy(nf, NUM_BDMF);
   }
   
-  num_features = atoi(g_hash_table_lookup(roi->attrs, strcat(nf, prefix)));
-  g_debug("adding %d features for %s", num_features, prefix);
-  features = malloc(num_features*sizeof(float));
-  for (i = 0; i < num_features; i++) {
+  // save features for visual similarity search (non-normalized)
+  numvf = atoi(g_hash_table_lookup(roi->attrs, NUM_UPMC));
+  g_debug("adding %d features for %s", numvf, UPMC_PREFIX);
+  vfeatures = malloc(numvf*sizeof(float));
+  for (i = 0; i < numvf; i++) {
+  	sprintf(fstr, "%s%02d", UPMC_PREFIX, i);
+  	vfeatures[i] = atof(g_hash_table_lookup(roi->attrs, fstr));
+  }
+  
+  // save features for algorithmic similarity search
+  numsf = atoi(g_hash_table_lookup(roi->attrs, nf));
+  g_debug("adding %d features for %s", numsf, prefix);
+  sfeatures = malloc(numsf*sizeof(float));
+  for (i = 0; i < numsf; i++) {
   	sprintf(fstr, "%s%02d", prefix, i);
-  	features[i] = atof(g_hash_table_lookup(roi->attrs, fstr));
+  	sfeatures[i] = atof(g_hash_table_lookup(roi->attrs, fstr));
   }
     
   gtk_list_store_append(saved_search_store, &iter);
@@ -116,8 +130,12 @@ void on_saveSearchButton_clicked (GtkButton *button,
 		     0, save_name,
 		     1, distanceMetric,
 		     2, t,
-		     3, num_features,
-		     4, features,
+		     3, numvf,
+		     4, vfeatures,
+		     5, numsf,
+		     6, sfeatures,
+		     7, s/100.0, // convert from percentage
+		     8, c/100.0, // convert from percentage
 		     -1);
 }
 

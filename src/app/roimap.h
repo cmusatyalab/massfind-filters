@@ -42,7 +42,7 @@ enum mass_margin {SPICULATED, ILLDEFINED, MICROLOBULATED, CIRCUMSCRIBED, OBSCURE
 
 roi_t *get_roi(char *path);
 void free_roi(roi_t *r);
-
-
+void get_roi_features(char *roiName, GHashTable *ht);
+gboolean remove_roi_attrs(gpointer key, gpointer value, gpointer user_data);
 
 #endif

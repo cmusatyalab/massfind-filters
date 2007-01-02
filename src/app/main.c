@@ -24,10 +24,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <sys/param.h>
 
 #include "massfind.h"
 
 gboolean show_masses = TRUE;
+char indexFileName[MAXPATHLEN];
 
 static void setup_saved_search_store(void) {
   GtkTreeView *v = GTK_TREE_VIEW(glade_xml_get_widget(g_xml,
@@ -35,12 +37,16 @@ static void setup_saved_search_store(void) {
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
 
-  saved_search_store = gtk_list_store_new(5,
+  saved_search_store = gtk_list_store_new(9,
 					  G_TYPE_STRING,
 					  G_TYPE_INT,
 					  G_TYPE_DOUBLE,
 					  G_TYPE_INT,
-					  G_TYPE_POINTER);
+					  G_TYPE_POINTER,
+					  G_TYPE_INT,
+					  G_TYPE_POINTER,
+					  G_TYPE_DOUBLE,
+					  G_TYPE_DOUBLE);
 
   gtk_tree_view_set_model(v, GTK_TREE_MODEL(saved_search_store));
 
@@ -187,9 +193,10 @@ main (int argc, char *argv[])
 
 
   // setup the thumbnails
+  strcpy(indexFileName, argv[1]);
   setup_thumbnails(GTK_ICON_VIEW(glade_xml_get_widget(g_xml,
 						      "mammograms")),
-		  						argv[1]);
+		  						indexFileName);
 
   // init saved searches
   setup_saved_search_store();
@@ -207,3 +214,12 @@ main (int argc, char *argv[])
   return 0;
 }
 
+void get_data_directory(char **dirp) {
+	strcpy(*dirp, indexFileName);
+	char *lastcomp = strrchr(*dirp,'/');
+  	if (lastcomp != NULL)
+   	 	lastcomp[1] = '\0';
+  	else
+    	*dirp[0] = '\0';
+    return;
+}

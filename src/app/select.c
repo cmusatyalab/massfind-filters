@@ -53,10 +53,6 @@ void write_case_data(roi_t *roi) {
    w = glade_xml_get_widget(g_xml, "caseAge");
    sprintf(textLabel, "%d", roi->age);
    gtk_label_set_text(GTK_LABEL(w), textLabel);
-  
-   w = glade_xml_get_widget(g_xml, "caseBiopsy");
-   strcpy(textLabel, "MALIGNANT");
-   gtk_label_set_text(GTK_LABEL(w), textLabel);
    
    w = glade_xml_get_widget(g_xml, "caseShape");
    switch (roi->shape) {
@@ -118,9 +114,6 @@ void clear_case_data() {
    w = glade_xml_get_widget(g_xml, "caseAge");
    gtk_label_set_text(GTK_LABEL(w), "");
   
-   w = glade_xml_get_widget(g_xml, "caseBiopsy");
-   gtk_label_set_text(GTK_LABEL(w), "");
-   
    w = glade_xml_get_widget(g_xml, "caseShape");
    gtk_label_set_text(GTK_LABEL(w), "");
    
@@ -247,7 +240,7 @@ gboolean on_selection_expose_event (GtkWidget *d,
 }
 
 
-gboolean on_selection_button_press_event(GtkWidget      *widget,
+gboolean h(GtkWidget      *widget,
 					 GdkEventButton *event,
 					 gpointer        user_data) {
   g_debug("selection button press event");
