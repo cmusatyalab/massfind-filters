@@ -26,6 +26,7 @@
 #include "roimap.h"
 #include "drawutil.h"
 #include "roi_features.h"
+#include "diamond_interface.h"
 
 extern GdkPixbuf *s_pix;
 extern roi_t *roi;
@@ -76,28 +77,28 @@ void draw_define_offscreen_items(gint allocation_width, gint allocation_height) 
 					   GDK_INTERP_BILINEAR);
   }
 }
-// center scrolled window on mass ROI?
+
 
 void on_saveSearchButton_clicked (GtkButton *button,
 				  gpointer   user_data) {
   GtkTreeIter iter;
-  float *vfeatures = NULL;
-  float *sfeatures = NULL;
-  int numvf, numsf;
+  search_desc_t *desc = NULL;
   int i;
   char prefix[MAXFNAMELEN];
   char nf[MAXFNAMELEN];
   char fstr[MAXFNAMELEN];
   
-  const gchar *save_name =
-    gtk_entry_get_text(GTK_ENTRY(glade_xml_get_widget(g_xml, "searchName")));
-  g_debug("making new search: %s", save_name);
-
-  gdouble t = gtk_range_get_value(GTK_RANGE(glade_xml_get_widget(g_xml, "distanceThreshold")));
-  gdouble s = gtk_range_get_value(GTK_RANGE(glade_xml_get_widget(g_xml, "sizeDeviation")));
-  gdouble c = gtk_range_get_value(GTK_RANGE(glade_xml_get_widget(g_xml, "circularityDeviation")));
+  desc = (search_desc_t *) malloc(sizeof(search_desc_t));
+  desc->numsf = 0;
+  desc->numvf = 0;
+  desc->sfeatures = NULL;
+  desc->vfeatures = NULL;
+  desc->name = gtk_entry_get_text(
+  	GTK_ENTRY(glade_xml_get_widget(g_xml, "searchName")));
+  g_debug("making new search: %s", desc->name);
   
   // pick out the relevant ROI features, depending on the search
+  desc->searchType = distanceMetric;
   if (distanceMetric == EUCLIDIAN || 
   	  distanceMetric == QALDM) {  // both of these euclidian for now
   	strcpy(prefix, EDMF_PREFIX);
@@ -107,36 +108,56 @@ void on_saveSearchButton_clicked (GtkButton *button,
   	strcpy(nf, NUM_BDMF);
   }
   
-  // save features for visual similarity search (non-normalized)
-  numvf = atoi(g_hash_table_lookup(roi->attrs, NUM_UPMC));
-  g_debug("adding %d features for %s", numvf, UPMC_PREFIX);
-  vfeatures = malloc(numvf*sizeof(float));
-  for (i = 0; i < numvf; i++) {
-  	sprintf(fstr, "%s%02d", UPMC_PREFIX, i);
-  	vfeatures[i] = atof(g_hash_table_lookup(roi->attrs, fstr));
+  // get the similarity search threshold
+  desc->threshold = gtk_range_get_value(
+  	GTK_RANGE(glade_xml_get_widget(g_xml, "distanceThreshold")));
+
+  // check for visual feature constraints on search
+  gboolean sizeButtonPressed = gtk_toggle_button_get_active(
+  	GTK_TOGGLE_BUTTON(glade_xml_get_widget(g_xml, "sizeButton")));
+  desc->sizeUpper = RANGE_VALUE_UNDEFINED;
+  desc->sizeLower = RANGE_VALUE_UNDEFINED;
+  if (sizeButtonPressed) {
+	desc->sizeUpper = gtk_range_get_value(
+		GTK_RANGE(glade_xml_get_widget(g_xml, "sizeRangeUpper")));
+	desc->sizeLower = gtk_range_get_value(
+		GTK_RANGE(glade_xml_get_widget(g_xml, "sizeRangeLower")));
+  }
+
+  gboolean circButtonPressed = gtk_toggle_button_get_active(
+  	GTK_TOGGLE_BUTTON(glade_xml_get_widget(g_xml, "circularityButton")));
+  desc->circUpper = RANGE_VALUE_UNDEFINED;
+  desc->circLower = RANGE_VALUE_UNDEFINED;
+  if (circButtonPressed) {
+  	desc->circUpper = gtk_range_get_value(
+  		GTK_RANGE(glade_xml_get_widget(g_xml, "circularityRangeUpper")));
+  	desc->circLower = gtk_range_get_value(
+  		GTK_RANGE(glade_xml_get_widget(g_xml, "circularityRangeLower")));
+  }
+
+  if (sizeButtonPressed || circButtonPressed) {
+	  // save features for visual similarity search (non-normalized)
+	  desc->numvf = atoi(g_hash_table_lookup(roi->attrs, NUM_UPMC));
+	  g_debug("adding %d features for %s", desc->numvf, UPMC_PREFIX);
+	  desc->vfeatures = (float *) malloc(desc->numvf*sizeof(float));
+	  for (i = 0; i < desc->numvf; i++) {
+	  	sprintf(fstr, "%s%02d", UPMC_PREFIX, i);
+	  	desc->vfeatures[i] = atof(g_hash_table_lookup(roi->attrs, fstr));
+	  }
   }
   
   // save features for algorithmic similarity search
-  numsf = atoi(g_hash_table_lookup(roi->attrs, nf));
-  g_debug("adding %d features for %s", numsf, prefix);
-  sfeatures = malloc(numsf*sizeof(float));
-  for (i = 0; i < numsf; i++) {
+  desc->numsf = atoi(g_hash_table_lookup(roi->attrs, nf));
+  g_debug("adding %d features for %s", desc->numsf, prefix);
+  desc->sfeatures = (float *) malloc(desc->numsf*sizeof(float));
+  for (i = 0; i < desc->numsf; i++) {
   	sprintf(fstr, "%s%02d", prefix, i);
-  	sfeatures[i] = atof(g_hash_table_lookup(roi->attrs, fstr));
+  	desc->sfeatures[i] = atof(g_hash_table_lookup(roi->attrs, fstr));
   }
     
   gtk_list_store_append(saved_search_store, &iter);
-  gtk_list_store_set(saved_search_store, &iter,
-		     0, save_name,
-		     1, distanceMetric,
-		     2, t,
-		     3, numvf,
-		     4, vfeatures,
-		     5, numsf,
-		     6, sfeatures,
-		     7, s/100.0, // convert from percentage
-		     8, c/100.0, // convert from percentage
-		     -1);
+  gtk_list_store_set(saved_search_store, &iter, 0, desc->name, 1, desc, -1);
+  return;
 }
 
 void on_euclidianbutton_toggled(GtkToggleButton *togglebutton,
@@ -146,6 +167,7 @@ void on_euclidianbutton_toggled(GtkToggleButton *togglebutton,
     distanceMetric = EUCLIDIAN;
     g_debug("using Euclidian distance");
   }
+  return;
 }
                                 
 void on_boostedldmbutton_toggled(GtkToggleButton *togglebutton,
@@ -155,6 +177,7 @@ void on_boostedldmbutton_toggled(GtkToggleButton *togglebutton,
     distanceMetric = BOOSTLDM;
     g_debug("using boosted LDM");
   }
+  return;
 }
                                  
 void on_qaldmbutton_toggled(GtkToggleButton *togglebutton,
@@ -164,13 +187,7 @@ void on_qaldmbutton_toggled(GtkToggleButton *togglebutton,
     distanceMetric = QALDM;
     g_debug("using query-adaptive LDM");
   }
-}
-
-void on_define_search_value_changed (GtkRange *range,
-				     gpointer  user_data) {
-	
-  threshold = gtk_range_get_value(range);
-  g_debug("threshold value changed to %f", threshold);
+  return;
 }
 
 gboolean on_selectionFullSize_configure_event (GtkWidget *widget,
@@ -203,6 +220,7 @@ gboolean on_selectionFullSize_expose_event (GtkWidget *d,
 						scale_full);
   	}    
  }
+ return;
 }
 
 

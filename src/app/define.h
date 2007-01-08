@@ -17,13 +17,12 @@
 
 #include <gtk/gtk.h>
 
+#define RANGE_VALUE_UNDEFINED -1
+
 enum distanceMetricType { EUCLIDIAN, BOOSTLDM, QALDM };
 
 void draw_define_offscreen_items(gint allocation_width, 
 								 gint allocation_height);
-
-void on_define_search_value_changed (GtkRange *range,
-				     gpointer  user_data);
 
 void on_saveSearchButton_clicked (GtkButton *button,
 				  gpointer   user_data);
