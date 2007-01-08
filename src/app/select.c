@@ -240,7 +240,7 @@ gboolean on_selection_expose_event (GtkWidget *d,
 }
 
 
-gboolean h(GtkWidget      *widget,
+gboolean on_selection_button_press_event(GtkWidget *widget,
 					 GdkEventButton *event,
 					 gpointer        user_data) {
   g_debug("selection button press event");
