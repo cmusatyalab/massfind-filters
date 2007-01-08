@@ -20,6 +20,7 @@
 #include "lib_searchlet.h"
 
 #include <stdio.h>
+#include <gtk/gtk.h>
 
 #define MAX_ALBUMS 32
 
@@ -35,6 +36,21 @@ struct collection_t
   int active;
 };
 
+typedef struct 
+{
+	gchar *name;
+	int searchType;
+	gdouble threshold;
+	gdouble sizeUpper;
+	gdouble sizeLower;
+	gdouble circUpper;
+	gdouble circLower;
+ 	int numvf;
+ 	float *vfeatures;
+ 	int numsf;
+   	float *sfeatures;
+} search_desc_t;
+
 extern int total_objects;
 extern int processed_objects;
 extern int dropped_objects;
@@ -42,12 +58,11 @@ extern int dropped_objects;
 #ifdef __cplusplus
 extern "C" {
 #endif
-  ls_search_handle_t diamond_similarity_search(int searchType, 
-  					double threshold,
-					int numvf, float *vf, 
-					int numsf, float *sf,
-					double sdev, double cdev);
+
+  ls_search_handle_t diamond_similarity_search(search_desc_t *desc);
+
   gboolean diamond_result_callback(gpointer data);
+
 #ifdef __cplusplus
 }
 #endif

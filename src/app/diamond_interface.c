@@ -29,41 +29,22 @@
 #include "lib_filter.h"
 #include "lib_dconfig.h"
 
-static struct collection_t collections[MAX_ALBUMS+1] = { { NULL } };
-static gid_list_t diamond_gid_list;
-
-
-
-
 int total_objects;
 int processed_objects;
 int dropped_objects;
 
-/*
- *  mass ROI names are coded to indicate benign or malignant
- * it would be nice to have an attribute that says this instead...
- */
-gboolean is_malignant_result(char *name) {
-	gboolean result = FALSE;
-	if (strncmp(name, "TM", 2) == 0)
-		result = TRUE;
-	
-	return result;
-}
-
-
-static void diamond_init(void) {
+static ls_search_handle_t diamond_init(void) {
   int i;
   int j;
   int err;
   void *cookie;
   char *name;
-
-  if (diamond_gid_list.num_gids != 0) {
-    // already initialized
-    return;
-  }
-
+  ls_search_handle_t diamond_handle;
+  gid_list_t diamond_gid_list;
+  struct collection_t collections[MAX_ALBUMS+1] = { { NULL } };
+  ls_dev_handle_t dev_list[16];
+  int num_devices;
+	
   printf("reading collections...\n");
   {
     int pos = 0;
@@ -78,7 +59,7 @@ static void diamond_init(void) {
     collections[pos].name = NULL;
   }
 
-
+  diamond_gid_list.num_gids = 0;
   for (i=0; i<MAX_ALBUMS && collections[i].name; i++) {
     if (collections[i].active) {
       int err;
@@ -93,21 +74,8 @@ static void diamond_init(void) {
     }
   }
 
-}
-
-static ls_search_handle_t generic_search (char *filter_spec_name) {
-  ls_search_handle_t diamond_handle;
-  int f1, f2;
-  int err;
-  ls_dev_handle_t dev_list[16];
-  int num_devices;
-  int num_objects;
-
-  char buf[1];
-
-  diamond_init(); 
   diamond_handle = ls_init_search();
-
+  
   err = ls_set_searchlist(diamond_handle, 1, diamond_gid_list.gids);
   g_assert(!err);
   
@@ -116,6 +84,20 @@ static ls_search_handle_t generic_search (char *filter_spec_name) {
   g_assert(!err);
   g_debug("Searching on %d devices", num_devices);
   
+  return(diamond_handle);
+}
+
+static ls_search_handle_t generic_search (char *filter_spec_name) {
+  static ls_search_handle_t diamond_handle = NULL;
+  int f1, f2;
+  int err;
+
+  char buf[1];
+
+  if (diamond_handle == NULL) {
+  	  diamond_handle = diamond_init();
+  }
+
   // append our stuff
   f1 = g_open(MASSFIND_FILTERDIR "/rgb-filter.txt", O_RDONLY);
   if (f1 == -1) {
@@ -141,7 +123,6 @@ static ls_search_handle_t generic_search (char *filter_spec_name) {
 			 DIAMOND_FILTERDIR "/fil_rgb.a",
 			 filter_spec_name);
   g_assert(!err);
-
 
   return diamond_handle;
 }
@@ -189,6 +170,19 @@ static void update_stats(ls_search_handle_t dr) {
 }
 
 
+/*
+ *  mass ROI names are coded to indicate benign or malignant
+ * it would be nice to have an attribute that says this instead...
+ */
+gboolean is_malignant_result(char *name) {
+	gboolean result = FALSE;
+	if (strncmp(name, "TM", 2) == 0)
+		result = TRUE;
+	
+	return result;
+}
+
+
 gboolean diamond_result_callback(gpointer g_data) {
   // this gets 0 or 1 result from diamond and puts it into the
   // icon view
@@ -227,8 +221,17 @@ gboolean diamond_result_callback(gpointer g_data) {
     last_time = now;
 
     return TRUE;
-  } else if (err) {
+  } else if (err == ENOENT) {
     // no more results
+    GtkWidget *stopSearch = glade_xml_get_widget(g_xml, "stopSearch");
+    GtkWidget *startSearch = glade_xml_get_widget(g_xml, "startSearch");
+    gtk_widget_set_sensitive(stopSearch, FALSE);
+    gtk_widget_set_sensitive(startSearch, TRUE);
+
+    ls_terminate_search(dr);
+    return FALSE;
+  } else if (err) {
+    g_warning("ls_next_object: %d", err);
     GtkWidget *stopSearch = glade_xml_get_widget(g_xml, "stopSearch");
     GtkWidget *startSearch = glade_xml_get_widget(g_xml, "startSearch");
     gtk_widget_set_sensitive(stopSearch, FALSE);
@@ -304,14 +307,8 @@ gboolean diamond_result_callback(gpointer g_data) {
 }
 
 
-ls_search_handle_t diamond_similarity_search(int searchType, 
-											 double threshold,
-											 int numvf, 
-											 float *vf,
-											 int numsf,
-											 float *sf,
-											 double size_dev,
-											 double circ_dev) {
+ls_search_handle_t diamond_similarity_search(search_desc_t *desc) {
+	
   ls_search_handle_t dr;
   int fd;
   int i;
@@ -320,30 +317,37 @@ ls_search_handle_t diamond_similarity_search(int searchType,
   int err;
   char filter_name[MAXPATHLEN];
 
-  // temporary file
+  // temporary file for filter specification
   fd = g_file_open_tmp(NULL, &name_used, NULL);
   g_assert(fd >= 0);
-
-  // write out file for similarity search
   f = fdopen(fd, "a");
   g_return_val_if_fail(f, NULL);
-  strcpy(filter_name, DIAMOND_FILTERDIR);
-
-  fprintf(f, "\n\n"
-	  "FILTER visual\n"
-	  "THRESHOLD 1\n"
-	  "EVAL_FUNCTION  f_eval_visual\n"
-	  "INIT_FUNCTION  f_init_visual\n"
-	  "FINI_FUNCTION  f_fini_visual\n");
- 
-  // write the features from the source image
-  for (i = 0; i < numvf; i++) {
-  	fprintf(f, "ARG  %f  # feature %i\n", vf[i], i);
+  
+  // do we need the visual filter?
+  if (desc->vfeatures != NULL) {
+	  fprintf(f, "\n\n"
+		  "FILTER visual\n"
+		  "THRESHOLD 1\n"
+		  "EVAL_FUNCTION  f_eval_visual\n"
+		  "INIT_FUNCTION  f_init_visual\n"
+		  "FINI_FUNCTION  f_fini_visual\n");
+	 
+	  // write the features from the source image
+	  for (i = 0; i < desc->numvf; i++) {
+	  	fprintf(f, "ARG  %f  # feature %i\n", desc->vfeatures[i], i);
+	  }
+	  fprintf(f, "ARG  %f  # lower size range multiplier\n", 
+	  			desc->sizeLower);
+	  fprintf(f, "ARG  %f  # upper size range multiplier\n", 
+	  			desc->sizeUpper);
+	  fprintf(f, "ARG  %f  # lower circularity range multiplier\n", 
+	  			desc->circLower);
+	  fprintf(f, "ARG  %f  # upper circularity range multiplier\n", 
+	  			desc->circUpper);
   }
-  fprintf(f, "ARG  %f  # size deviation\n", size_dev);
-  fprintf(f, "ARG  %f  # circularity deviation\n", circ_dev);
  
-   switch (searchType) {
+  strcpy(filter_name, DIAMOND_FILTERDIR);
+  switch (desc->searchType) {
   	case EUCLIDIAN:
   	fprintf(f, "\n\n"
 	  "FILTER euclidian\n"
@@ -351,7 +355,7 @@ ls_search_handle_t diamond_similarity_search(int searchType,
 	  "EVAL_FUNCTION  f_eval_euclidian\n"
 	  "INIT_FUNCTION  f_init_euclidian\n"
 	  "FINI_FUNCTION  f_fini_euclidian\n",
-	  (int) threshold);
+	  (int) desc->threshold);
 	strcat(filter_name, "/libfil_euclidian.a");
 	break;
 	
@@ -362,7 +366,7 @@ ls_search_handle_t diamond_similarity_search(int searchType,
 	  "EVAL_FUNCTION  f_eval_boostldm\n"
 	  "INIT_FUNCTION  f_init_boostldm\n"
 	  "FINI_FUNCTION  f_fini_boostldm\n",
-	  (int) threshold);
+	  (int) desc->threshold);
  	strcat(filter_name, "/libfil_boostldm.a");
   	break;
   	
@@ -373,16 +377,17 @@ ls_search_handle_t diamond_similarity_search(int searchType,
 	  "EVAL_FUNCTION  f_eval_qaldm\n"
 	  "INIT_FUNCTION  f_init_qaldm\n"
 	  "FINI_FUNCTION  f_fini_qaldm\n",
-	  (int) threshold);
+	  (int) desc->threshold);
 	strcat(filter_name, "/libfil_qaldm.a");
  	break;
   }
   
   // write the features from the source image
-  for (i = 0; i < numsf; i++) {
-  	fprintf(f, "ARG  %f  # feature %i\n", sf[i], i);
+  for (i = 0; i < desc->numsf; i++) {
+  	fprintf(f, "ARG  %f  # feature %i\n", desc->sfeatures[i], i);
   }
   
+  // write dependencies
   fprintf(f, "REQUIRES  RGB # dependencies\n"
 	  "MERIT  50 # some relative cost\n");
 	  
@@ -394,17 +399,20 @@ ls_search_handle_t diamond_similarity_search(int searchType,
   err = ls_add_filter_file(dr, DEV_ISA_IA32, filter_name);
   g_assert(!err);
 
-  strcpy(filter_name, DIAMOND_FILTERDIR);
-  strcat(filter_name, "/libfil_visual.a");
-  err = ls_add_filter_file(dr, DEV_ISA_IA32, filter_name);
-  g_assert(!err);
+  if (desc->vfeatures != NULL) {
+	  strcpy(filter_name, DIAMOND_FILTERDIR);
+	  strcat(filter_name, "/libfil_visual.a");
+	  err = ls_add_filter_file(dr, DEV_ISA_IA32, filter_name);
+	  g_assert(!err);
+  }
   
   // now close
   fclose(f);
   g_free(name_used);
 
   // start search
-  ls_start_search(dr);
+  err = ls_start_search(dr);
+  g_assert(!err);
 
   // return
   return dr;
