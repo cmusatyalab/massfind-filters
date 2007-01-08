@@ -40,13 +40,15 @@ int f_init_visual(int numarg, char **args, int blob_len,
 	fconfig = (visual_config_t *)malloc(sizeof(*fconfig));
 	assert(fconfig);
 
-	fconfig->numFeatures = numarg-2;
+	fconfig->numFeatures = numarg-4;
 	fconfig->features = (float *) malloc(sizeof(float) * fconfig->numFeatures);
     for (i = 0; i < fconfig->numFeatures; i++) {
     	fconfig->features[i] = atof(args[i]);
     }
-    fconfig->size_threshold = atof(args[numarg-2]);
-    fconfig->circularity_threshold = atof(args[numarg-1]);
+    fconfig->size_mult_lower = atof(args[numarg-4]);
+    fconfig->size_mult_upper = atof(args[numarg-3]);
+    fconfig->circ_mult_lower = atof(args[numarg-2]);
+    fconfig->circ_mult_upper = atof(args[numarg-1]);
 
 	/*
 	 * save the data pointer 
@@ -73,46 +75,45 @@ int f_eval_visual(lf_obj_handle_t ohandle, void *f_data)
 	visual_config_t *fconfig = (visual_config_t *) f_data;
 	size_t featureLen = MAXFEATURELEN;
 	unsigned char featureStr[MAXFEATURELEN];
-	int numFeatures;
 	float size, circularity;
 	float r_min, r_max;
 	char fname[7];
-	int pass = 1;
+	int inRange;
 	
 	lf_log(LOGL_TRACE, "f_eval_visual: enter");
 	
-	// read the object's region size
-	sprintf(fname, "%s%02d", UPMC_PREFIX, UPMC_REGION_SIZE);
-	err = lf_read_attr(ohandle, fname, &featureLen, featureStr);
-	assert(err == 0);
-	size = atof((char *)featureStr);
+	if (fconfig->size_mult_lower > 0) {
+		// read the object's region size
+		sprintf(fname, "%s%02d", UPMC_PREFIX, UPMC_REGION_SIZE);
+		err = lf_read_attr(ohandle, fname, &featureLen, featureStr);
+		assert(err == 0);
+		size = atof((char *)featureStr);
+		
+		// compare to query image region size
+		r_max = fconfig->features[UPMC_REGION_SIZE] * 
+				fconfig->size_mult_upper;
+		r_min = fconfig->features[UPMC_REGION_SIZE] * 
+				fconfig->size_mult_lower;
+		if (size < r_min || size > r_max) 
+			return 0;
+	}
 	
-	// compare to query image region size
-	r_max = fconfig->features[UPMC_REGION_SIZE] * 
-			(1.0 + fconfig->size_threshold);
-	r_min = fconfig->features[UPMC_REGION_SIZE] * 
-			(1.0 - fconfig->size_threshold);
-	if (r_min < 0.0) 
-		r_min = 0.0;
-	if (size < r_min || size > r_max) 
-		return 0;
-	
-	// read the object's circularity
-	featureLen = MAXFEATURELEN;  // reset, o.w. could be too small
-	sprintf(fname, "%s%02d", UPMC_PREFIX, UPMC_REGION_CIRCULARITY);
-	err = lf_read_attr(ohandle, fname, &featureLen, featureStr);
-	assert(err == 0);
-	circularity = atof((char *)featureStr);
-	
-	// compare to query image region circularity
-	r_max = fconfig->features[UPMC_REGION_CIRCULARITY] * 
-			(1.0 + fconfig->circularity_threshold);
-	r_min = fconfig->features[UPMC_REGION_CIRCULARITY] * 
-			(1.0 - fconfig->circularity_threshold);
-	if (r_min < 0.0) 
-		r_min = 0.0;
-	if (circularity < r_min || circularity > r_max) 
-		return 0;
+	if (fconfig->circ_mult_lower > 0) {
+		// read the object's circularity
+		featureLen = MAXFEATURELEN;  // reset, o.w. could be too small
+		sprintf(fname, "%s%02d", UPMC_PREFIX, UPMC_REGION_CIRCULARITY);
+		err = lf_read_attr(ohandle, fname, &featureLen, featureStr);
+		assert(err == 0);
+		circularity = atof((char *)featureStr);
+		
+		// compare to query image region circularity
+		r_max = fconfig->features[UPMC_REGION_CIRCULARITY] * 
+				fconfig->circ_mult_upper;
+		r_min = fconfig->features[UPMC_REGION_CIRCULARITY] * 
+				fconfig->circ_mult_lower;
+		if (circularity < r_min || circularity > r_max) 
+			return 0;
+	}
 
 	return 1;
 }
