@@ -4,7 +4,7 @@
 // constants for ROI text attributes
 
 #define MAXFEATURELEN 80
-#define MAXFNAMELEN 10
+#define MAXFNAMELEN 20
 
 #define UPMC_PREFIX "rawf"	// visual features
 #define EDMF_PREFIX "edmf"	// normalized features for euclidian distance
