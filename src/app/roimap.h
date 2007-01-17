@@ -22,8 +22,6 @@ typedef struct {
   char *full_image_name;
   char *roi_image_name;
   char *case_name;
-  int center_x;
-  int center_y;
   int subtlety;
   int birad;
   int density;

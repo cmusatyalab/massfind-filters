@@ -40,8 +40,6 @@ roi_t *get_roi_record(char *mapFileName, char *studyID) {
   char line[MAXLINELEN];
   char *next_token = NULL;
   char *image_name;
-  int center_x;
-  int center_y;
   int birad;
   int density;
   int subtlety;
@@ -72,17 +70,14 @@ roi_t *get_roi_record(char *mapFileName, char *studyID) {
       next_token = strtok(NULL, SEPARATORS);
     }
     if (next_token != NULL) {
-//      g_debug("center_x %s", next_token);
       if (isdigit(next_token[0])) {
-		center_x = atoi(next_token);
+		// skip past center x 
+		next_token = strtok(NULL, SEPARATORS);
       }
-      // center y
-      next_token = strtok(NULL, SEPARATORS);
     }
     if (next_token != NULL) {
-//      g_debug("center_y %s", next_token);
       if (isdigit(next_token[0])) {
-		center_y = atoi(next_token);
+		// skip past center y
  	    next_token = strtok(NULL, SEPARATORS);
      }
     }
@@ -164,8 +159,6 @@ roi_t *get_roi_record(char *mapFileName, char *studyID) {
       strcpy(roi->case_name, studyID);
       roi->full_image_name = NULL;
       roi->roi_image_name = NULL;
-      roi->center_x = center_x;
-      roi->center_y = center_y;
       roi->subtlety = subtlety;
       roi->birad = birad;
       roi->density = density;
