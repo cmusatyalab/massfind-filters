@@ -31,6 +31,8 @@
 #include "define.h"
 #include "roimap.h" 
 #include "drawutil.h"
+#include "roi_features.h"
+#include "upmc_features.h"
 
 extern gboolean show_masses;
 
@@ -185,7 +187,7 @@ static void foreach_selection(GtkIconView *icon_view,
 void on_mammograms_selection_changed (GtkIconView *view,
 					     gpointer user_data) {
   GtkWidget *w;
-  g_debug("mammograms selection changed");
+//  g_debug("mammograms selection changed");
  
   // load the image
   gtk_icon_view_selected_foreach(view, foreach_selection, NULL);
@@ -214,7 +216,8 @@ gboolean on_selection_configure_event (GtkWidget *widget,
 gboolean on_selection_expose_event (GtkWidget *d,
 				    GdkEventExpose *event,
 				    gpointer user_data) {
-  g_debug("selected image expose event");
+  
+//  g_debug("selected image expose event");
   if (s_pix) {
      gdk_draw_pixbuf(d->window,
 		    d->style->fg_gc[GTK_WIDGET_STATE(d)],
@@ -224,10 +227,34 @@ gboolean on_selection_expose_event (GtkWidget *d,
 		    GDK_RGB_DITHER_NORMAL,
 		    0, 0);
 	if (roi && roi->pixbuf && show_masses) {
-  		// draw mass roi seed and border on (scaled) full image
-		draw_roi_center(d, roi->center_x, roi->center_y, scale);
-		double frame_x = roi->center_x - (gdk_pixbuf_get_width(roi->pixbuf)/2);
-		double frame_y = roi->center_y - (gdk_pixbuf_get_height(roi->pixbuf)/2);
+		int i;
+		char fstr[MAXFNAMELEN];
+		
+	    // get the contour points
+		char *value = g_hash_table_lookup(roi->attrs, NUM_CONTOUR);
+		int npoints = atoi(value);
+		double *xvals = (double *)malloc(npoints*sizeof(double));
+		double *yvals = (double *)malloc(npoints*sizeof(double));	
+		for (i = 0; i < npoints; i++) {
+			sprintf(fstr, "%s%03d", CONTOUR_X_PREFIX, i);
+			value = g_hash_table_lookup(roi->attrs, fstr);
+			xvals[i] = atof(value);
+			sprintf(fstr, "%s%03d", CONTOUR_Y_PREFIX, i);
+			value = g_hash_table_lookup(roi->attrs, fstr);
+			yvals[i] = atof(value);
+		}
+		draw_roi_contour(d, npoints, xvals, yvals, scale);
+		free(xvals);
+		free(yvals);
+
+		sprintf(fstr, "%s%02d", UPMC_PREFIX, UPMC_CENTER_X);
+		value = g_hash_table_lookup(roi->attrs, fstr);
+		int center_x = atoi(value)*4;
+		sprintf(fstr, "%s%02d", UPMC_PREFIX, UPMC_CENTER_Y);
+		value = g_hash_table_lookup(roi->attrs, fstr);
+		int center_y = atoi(value)*4;    
+		double frame_x = center_x - (gdk_pixbuf_get_width(roi->pixbuf)/2);
+		double frame_y = center_y - (gdk_pixbuf_get_height(roi->pixbuf)/2);
 		draw_roi_border(d, frame_x, frame_y, 
 						gdk_pixbuf_get_width(roi->pixbuf), 
 						gdk_pixbuf_get_height(roi->pixbuf),
@@ -235,7 +262,6 @@ gboolean on_selection_expose_event (GtkWidget *d,
   	}    
   }
   
-
   return TRUE;
 }
 
@@ -243,7 +269,7 @@ gboolean on_selection_expose_event (GtkWidget *d,
 gboolean on_selection_button_press_event(GtkWidget *widget,
 					 GdkEventButton *event,
 					 gpointer        user_data) {
-  g_debug("selection button press event");
+//  g_debug("selection button press event");
   
   // read and draw the mass ROI
   GtkWidget *w = glade_xml_get_widget(g_xml, "massWindow");

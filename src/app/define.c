@@ -26,6 +26,7 @@
 #include "roimap.h"
 #include "drawutil.h"
 #include "roi_features.h"
+#include "upmc_features.h"
 #include "diamond_interface.h"
 
 extern GdkPixbuf *s_pix;
@@ -210,10 +211,36 @@ gboolean on_selectionFullSize_expose_event (GtkWidget *d,
 		    GDK_RGB_DITHER_NORMAL,
 		    0, 0);
 	  if (roi && roi->pixbuf && show_masses) {
-  		// draw mass roi seed and border on (scaled) full image
-		draw_roi_center(d, roi->center_x, roi->center_y, scale_full);
-		double frame_x = roi->center_x - (gdk_pixbuf_get_width(roi->pixbuf)/2);
-		double frame_y = roi->center_y - (gdk_pixbuf_get_height(roi->pixbuf)/2);
+	  	int i;
+	  	char fstr[MAXFNAMELEN];
+	  	
+	    // get the contour points
+		char *value = g_hash_table_lookup(roi->attrs, NUM_CONTOUR);
+		int npoints = atoi(value);
+		double *xvals = (double *)malloc(npoints*sizeof(double));
+		double *yvals = (double *)malloc(npoints*sizeof(double));	
+		for (i = 0; i < npoints; i++) {
+			sprintf(fstr, "%s%03d", CONTOUR_X_PREFIX, i);
+			value = g_hash_table_lookup(roi->attrs, fstr);
+			xvals[i] = atof(value);
+			sprintf(fstr, "%s%03d", CONTOUR_Y_PREFIX, i);
+			value = g_hash_table_lookup(roi->attrs, fstr);
+			yvals[i] = atof(value);
+		}
+		draw_roi_contour(d, npoints, xvals, yvals, scale_full);
+		free(xvals);
+		free(yvals);
+
+		sprintf(fstr, "%s%02d", UPMC_PREFIX, UPMC_CENTER_X);
+		value = g_hash_table_lookup(roi->attrs, fstr);
+		int center_x = atoi(value)*4;
+		sprintf(fstr, "%s%02d", UPMC_PREFIX, UPMC_CENTER_Y);
+		value = g_hash_table_lookup(roi->attrs, fstr);
+		int center_y = atoi(value)*4;    
+
+  		// draw mass roi border on (scaled) full image
+		double frame_x = center_x - (gdk_pixbuf_get_width(roi->pixbuf)/2);
+		double frame_y = center_y - (gdk_pixbuf_get_height(roi->pixbuf)/2);
 		draw_roi_border(d, frame_x, frame_y, 
 						gdk_pixbuf_get_width(roi->pixbuf), 
 						gdk_pixbuf_get_height(roi->pixbuf),
