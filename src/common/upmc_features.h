@@ -2,7 +2,7 @@
 #define UPMC_FEATURES_H_
 
 // description of UPMC features
-#define NUM_UPMC_FEATURES 38
+#define NUM_UPMC_FEATURES 50
 
 // global features
 
@@ -86,6 +86,27 @@
 // center position shift (distance between gravity center and local
 // minimum)/region size
 #define UPMC_CENTER_POSITION_SHIFT 37
+// center X coordinate of the region / sub sample rate (4)
+#define UPMC_CENTER_X 38
+// center Y coordinate of the region / 4
+#define UPMC_CENTER_Y 39
+// Boundary frame (top - Y/4)
+#define UPMC_BOUNDARY_FRAME_TOP 40
+// Boundary frame (bottom - Y/4)
+#define UPMC_BOUNDARY_FRAME_BOTTOM 41
+// Boundary frame (left - X/4)
+#define UPMC_BOUNDARY_FRAME_LEFT 42
+// Boundary frame (right - X/4)
+#define UPMC_BOUNDARY_FRAME_RIGHT 43
+// 44 empty
+// Average pixel value of mass region
+#define UPMC_AVG_PIXEL_MASS 45
+// Average pixel value of surrounding background
+#define UPMC_AVG_PIXEL_BACKGROUND 46
+// Pixel count of mass region
+#define UPMC_MASS_PIXEL_COUNT 47
+// 48 empty
+// 49 empty
 
 
 #endif /*UPMC_FEATURES_H_*/
