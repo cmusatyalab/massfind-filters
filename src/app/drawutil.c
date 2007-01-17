@@ -93,51 +93,6 @@ void draw_thumbnail_border(GdkPixbuf *pix, gint w, gint h,
 }
 
 
-void draw_roi_center(GtkWidget *w, int cx, int cy, double scale) {
-
-	cairo_t *cr = gdk_cairo_create(w->window);
-
-	// draw a circle at the mass center	
-	cairo_scale(cr, scale, scale);
-
-	double radius;
- 	radius = 10;
- 	cairo_arc (cr, cx, cy, radius, 0, 2 * M_PI);
- 	
- 	// draw the circle border
- 	cairo_set_line_width(cr, 10.0);
- 	cairo_set_source_rgb (cr, 1.0, 0, 0);  // in red!
- 	cairo_stroke (cr);
-	
-	cairo_destroy(cr);	
-}
-
-void draw_pixbuf_roi_center(GdkPixbuf *p, int cx, int cy, double scale) {
-
-	guchar *pixels = gdk_pixbuf_get_pixels(p);
-  	cairo_surface_t *surface = cairo_image_surface_create_for_data(pixels,
-								 CAIRO_FORMAT_ARGB32,
-								 gdk_pixbuf_get_width(p), 
-								 gdk_pixbuf_get_height(p), 
-								 gdk_pixbuf_get_rowstride(p));
- 	cairo_t *cr = cairo_create(surface);
-
-	// draw a circle at the mass center	
-	cairo_scale(cr, scale, scale);
-
-	double radius;
- 	radius = 10;
- 	cairo_arc (cr, cx, cy, radius, 0, 2 * M_PI);
- 	
- 	// draw the circle border
- 	cairo_set_line_width(cr, 10.0);
- 	cairo_set_source_rgb (cr, 1.0, 0, 0);  // in red!
- 	cairo_stroke (cr);
-	
-	cairo_destroy(cr);	
-}
-
-
 void draw_roi_border(GtkWidget *w, double x, double y, 
 					double wi, double ht, double scale) {
 
@@ -165,6 +120,48 @@ void draw_pixbuf_roi_border(GdkPixbuf *p, double x, double y,
 	cairo_scale(cr, scale, scale);
   	cairo_rectangle (cr, x, y, wi, ht);
  	cairo_set_line_width(cr, 10.0);
+ 	cairo_set_source_rgb (cr, 1.0, 0, 0);  // in red!
+ 	cairo_stroke (cr);
+	
+	cairo_destroy(cr);	
+}
+
+void draw_roi_contour(GtkWidget *w, int npoints, 
+					double *xvals, double *yvals, double scale) {
+	int i;
+	cairo_t *cr = gdk_cairo_create(w->window);
+
+	cairo_scale(cr, scale, scale);
+	cairo_move_to(cr, xvals[0], yvals[0]);
+	for (i = 1; i < npoints; i++) {
+		cairo_line_to(cr, xvals[i], yvals[i]);
+	}
+	cairo_close_path(cr);
+ 	cairo_set_line_width(cr, 1.0);
+ 	cairo_set_source_rgb (cr, 1.0, 0, 0);  // in red!
+ 	cairo_stroke (cr);
+	
+	cairo_destroy(cr);	
+}
+
+void draw_pixbuf_roi_contour(GdkPixbuf *p, int npoints, 
+						double *xvals, double *yvals, double scale) {
+	int i;
+	
+	guchar *pixels = gdk_pixbuf_get_pixels(p);
+  	cairo_surface_t *surface = cairo_image_surface_create_for_data(pixels,
+								 CAIRO_FORMAT_ARGB32,
+								 gdk_pixbuf_get_width(p), 
+								 gdk_pixbuf_get_height(p), 
+								 gdk_pixbuf_get_rowstride(p));
+ 	cairo_t *cr = cairo_create(surface);
+	cairo_scale(cr, scale, scale);
+ 	cairo_move_to(cr, xvals[0], yvals[0]);
+	for (i = 1; i < npoints; i++) {
+		cairo_line_to(cr, xvals[i], yvals[i]);
+	}
+	cairo_close_path(cr);
+	cairo_set_line_width(cr, 1.0);
  	cairo_set_source_rgb (cr, 1.0, 0, 0);  // in red!
  	cairo_stroke (cr);
 	
