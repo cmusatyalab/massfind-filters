@@ -137,7 +137,7 @@ void draw_roi_contour(GtkWidget *w, int npoints,
 		cairo_line_to(cr, xvals[i], yvals[i]);
 	}
 	cairo_close_path(cr);
- 	cairo_set_line_width(cr, 1.0);
+ 	cairo_set_line_width(cr, 2.0);
  	cairo_set_source_rgb (cr, 1.0, 0, 0);  // in red!
  	cairo_stroke (cr);
 	
@@ -161,7 +161,7 @@ void draw_pixbuf_roi_contour(GdkPixbuf *p, int npoints,
 		cairo_line_to(cr, xvals[i], yvals[i]);
 	}
 	cairo_close_path(cr);
-	cairo_set_line_width(cr, 1.0);
+	cairo_set_line_width(cr, 2.0);
  	cairo_set_source_rgb (cr, 1.0, 0, 0);  // in red!
  	cairo_stroke (cr);
 	
