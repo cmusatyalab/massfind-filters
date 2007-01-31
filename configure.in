@@ -31,7 +31,7 @@ AC_SUBST(LDFLAGS, "-L${DIAMOND_PREFIX}/lib")
 AC_SUBST(CPPFLAGS, "-Werror-implicit-function-declaration -I${DIAMOND_PREFIX}/include")
 
 # XXX circular dependencies
-AC_SUBST(LIBS, "-lpthread -lm -lsearchlet -lfilterexec -lfilter -llog -lodisk -ltools -lhstub -ldctl -ldconfig -llog -lssl")
+AC_SUBST(LIBS, "-lpthread -lm -lsearchlet -lfilterexec -lfilter -llog -lodisk -ltools -lhstub -ldctl -ldconfig -llog -lssl -lkrb5 -lauth")
 
 # XXX should work on more than 1 arch
 AC_SUBST(CFLAGS, "-m32 -g")
@@ -55,6 +55,8 @@ AC_CHECK_LIB([log], [main], ,
         [AC_MSG_ERROR(Missing liblog)])
 AC_CHECK_LIB([tools], [main], ,
         [AC_MSG_ERROR(Missing libtools)])
+AC_CHECK_LIB([auth], [main], ,
+        [AC_MSG_ERROR(Missing libauth)])
         
 # this filter library is installed with snapfind
 AC_CHECK_FILE([${DIAMOND_PREFIX}/lib/fil_rgb.a],,
