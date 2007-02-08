@@ -16,6 +16,7 @@
 #include <math.h>
 #include <assert.h>
 
+#include "diamond_consts.h"
 #include "lib_filter.h"
 #include "roi_features.h"
 #include "fil_qaldm.h"
@@ -62,8 +63,8 @@ int f_eval_qaldm(lf_obj_handle_t ohandle, void *f_data)
 	int err;
 	int i;
 	qaldm_config_t *fconfig = (qaldm_config_t *) f_data;
-	size_t featureLen = MAXFEATURELEN;
-	unsigned char featureStr[MAXFEATURELEN];
+	size_t featureLen = MAX_ATTR_VALUE;
+	unsigned char featureStr[MAX_ATTR_VALUE];
 	int numFeatures;
 	float f;
 	float distance = 0;

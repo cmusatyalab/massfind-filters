@@ -18,6 +18,7 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include "diamond_consts.h"
 #include "lib_filter.h"
 #include "roi_features.h"
 #include "fil_euclidian.h"
@@ -64,12 +65,12 @@ int f_eval_euclidian(lf_obj_handle_t ohandle, void *f_data)
 	int err;
 	int i;
 	euclidian_config_t *fconfig = (euclidian_config_t *) f_data;
-	size_t featureLen = MAXFEATURELEN;
-	unsigned char featureStr[MAXFEATURELEN];
+	size_t featureLen = MAX_ATTR_VALUE;
+	unsigned char featureStr[MAX_ATTR_VALUE];
 	int numFeatures;
 	float f;
 	float distance = 0;
-	char fname[MAXFNAMELEN];
+	char fname[MAX_ATTR_NAME];
 	
 	lf_log(LOGL_TRACE, "f_eval_euclidian: enter");
 	
@@ -81,7 +82,7 @@ int f_eval_euclidian(lf_obj_handle_t ohandle, void *f_data)
 
 	for(i=0; i<numFeatures; i++) {
 		sprintf(fname, "%s%02d", EDMF_PREFIX, i);
-		featureLen = MAXFEATURELEN;  // reset, o.w. could be too small
+		featureLen = MAX_ATTR_VALUE;  // reset, o.w. could be too small
 		err = lf_read_attr(ohandle, fname, &featureLen, featureStr);
 		assert(err == 0);
 		f = atof((char *)featureStr);

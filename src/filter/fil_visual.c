@@ -22,6 +22,7 @@
 #include <assert.h>
 #include <stdio.h>
 
+#include "diamond_consts.h"
 #include "lib_filter.h"
 #include "upmc_features.h"
 #include "roi_features.h"
@@ -73,11 +74,11 @@ int f_eval_visual(lf_obj_handle_t ohandle, void *f_data)
 	int err;
 	int i;
 	visual_config_t *fconfig = (visual_config_t *) f_data;
-	size_t featureLen = MAXFEATURELEN;
-	unsigned char featureStr[MAXFEATURELEN];
+	size_t featureLen = MAX_ATTR_VALUE;
+	unsigned char featureStr[MAX_ATTR_VALUE];
 	float size, circularity;
 	float r_min, r_max;
-	char fname[7];
+	char fname[MAX_ATTR_NAME];
 	int inRange;
 	
 	lf_log(LOGL_TRACE, "f_eval_visual: enter");
@@ -100,7 +101,7 @@ int f_eval_visual(lf_obj_handle_t ohandle, void *f_data)
 	
 	if (fconfig->circ_mult_lower > 0) {
 		// read the object's circularity
-		featureLen = MAXFEATURELEN;  // reset, o.w. could be too small
+		featureLen = MAX_ATTR_VALUE;  // reset, o.w. could be too small
 		sprintf(fname, "%s%02d", UPMC_PREFIX, UPMC_REGION_CIRCULARITY);
 		err = lf_read_attr(ohandle, fname, &featureLen, featureStr);
 		assert(err == 0);
