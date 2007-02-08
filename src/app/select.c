@@ -27,6 +27,8 @@
 #include <sys/param.h>
 #include <string.h>
 
+#include "diamond_consts.h"
+
 #include "select.h"
 #include "define.h"
 #include "roimap.h" 
@@ -228,20 +230,28 @@ gboolean on_selection_expose_event (GtkWidget *d,
 		    0, 0);
 	if (roi && roi->pixbuf && show_masses) {
 		int i;
-		char fstr[MAXFNAMELEN];
+		char *xstr, *ystr, *delim;
+		char fstr[MAX_ATTR_NAME];
 		
 	    // get the contour points
 		char *value = g_hash_table_lookup(roi->attrs, NUM_CONTOUR);
 		int npoints = atoi(value);
+		char *xpts = g_hash_table_lookup(roi->attrs, CONTOUR_X);
+		char *ypts = g_hash_table_lookup(roi->attrs, CONTOUR_Y);
 		double *xvals = (double *)malloc(npoints*sizeof(double));
 		double *yvals = (double *)malloc(npoints*sizeof(double));	
-		for (i = 0; i < npoints; i++) {
-			sprintf(fstr, "%s%03d", CONTOUR_X_PREFIX, i);
-			value = g_hash_table_lookup(roi->attrs, fstr);
-			xvals[i] = atof(value);
-			sprintf(fstr, "%s%03d", CONTOUR_Y_PREFIX, i);
-			value = g_hash_table_lookup(roi->attrs, fstr);
-			yvals[i] = atof(value);
+		xstr = xpts;
+		ystr = ypts;
+		for (i = 0; i < npoints; i++) {	
+			delim = index(xstr, CONTOUR_DELIM);
+			strncpy(fstr, xstr, delim-xstr);
+			xstr = delim+1;
+			xvals[i] = atof(fstr);
+			
+			delim = index(ystr, CONTOUR_DELIM);
+			strncpy(fstr, ystr, delim-ystr);
+			ystr = delim+1;
+			yvals[i] = atof(fstr);
 		}
 		draw_roi_contour(d, npoints, xvals, yvals, scale);
 		free(xvals);

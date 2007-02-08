@@ -27,7 +27,6 @@
 
 #define MAPFILENAME "Truthfile.txt"
 #define MAXLINELEN 256
-#define MAXATTRLEN 32
 #define SEPARATORS " \t"
 #define ATTR_SEPS "\"=\n"
 
@@ -180,20 +179,20 @@ roi_t *get_roi_record(char *mapFileName, char *studyID) {
 
 void get_roi_attrs(char *attrFileName, GHashTable *ht) {
 
-  char line[MAXLINELEN];
+  char line[BUFSIZ];
   char *attr = NULL;
   char *value = NULL;
   char *k, *v;
 
   FILE *fp = fopen(attrFileName, "r");
-  while (fgets(line, MAXLINELEN, fp) != NULL) {
+  while (fgets(line, BUFSIZ, fp) != NULL) {
     attr = strtok(line, ATTR_SEPS);
     value = strtok(NULL, ATTR_SEPS);
     if (attr != NULL && value != NULL) {
-    	k = malloc(MAXATTRLEN);
-    	v = malloc(MAXATTRLEN);
-    	strncpy(k, attr, MAXATTRLEN);
-    	strncpy(v, value, MAXATTRLEN);
+    	k = malloc(MAX_ATTR_NAME);
+    	v = malloc(MAX_ATTR_VALUE);
+    	strncpy(k, attr, MAX_ATTR_NAME);
+    	strncpy(v, value, MAX_ATTR_VALUE);
     	g_hash_table_insert(ht, k, v);
     }
   }
