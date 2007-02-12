@@ -344,6 +344,10 @@ ls_search_handle_t diamond_similarity_search(search_desc_t *desc) {
 	  			desc->circLower);
 	  fprintf(f, "ARG  %f  # upper circularity range multiplier\n", 
 	  			desc->circUpper);
+	  fprintf(f, "ARG  %f  # lower shape factor ratio multiplier\n", 
+	  			desc->sfrLower);
+	  fprintf(f, "ARG  %f  # upper shape factor ratio multiplier\n", 
+	  			desc->sfrUpper);
   }
  
   strcpy(filter_name, DIAMOND_FILTERDIR);

@@ -25,6 +25,8 @@ typedef struct visual_config
   float size_mult_upper;
   float circ_mult_lower;
   float circ_mult_upper;
+  float sfr_mult_lower;
+  float sfr_mult_upper;
 } visual_config_t;
 
 int f_init_visual(int numarg, char **args, int blob_len,

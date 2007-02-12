@@ -21,6 +21,7 @@
 #include <math.h>
 #include <assert.h>
 #include <stdio.h>
+#include <glib.h>
 
 #include "diamond_consts.h"
 #include "lib_filter.h"
@@ -41,15 +42,18 @@ int f_init_visual(int numarg, char **args, int blob_len,
 	fconfig = (visual_config_t *)malloc(sizeof(*fconfig));
 	assert(fconfig);
 
-	fconfig->numFeatures = numarg-4;
+    /* Hardcoded value???  */
+	fconfig->numFeatures = numarg-6;
 	fconfig->features = (float *) malloc(sizeof(float) * fconfig->numFeatures);
     for (i = 0; i < fconfig->numFeatures; i++) {
     	fconfig->features[i] = atof(args[i]);
     }
-    fconfig->size_mult_lower = atof(args[numarg-4]);
-    fconfig->size_mult_upper = atof(args[numarg-3]);
-    fconfig->circ_mult_lower = atof(args[numarg-2]);
-    fconfig->circ_mult_upper = atof(args[numarg-1]);
+    fconfig->size_mult_lower = atof(args[numarg-6]);
+    fconfig->size_mult_upper = atof(args[numarg-5]);
+    fconfig->circ_mult_lower = atof(args[numarg-4]);
+    fconfig->circ_mult_upper = atof(args[numarg-3]);
+    fconfig->sfr_mult_lower = atof(args[numarg-2]);
+    fconfig->sfr_mult_upper = atof(args[numarg-1]);
 
 	/*
 	 * save the data pointer 
@@ -76,7 +80,7 @@ int f_eval_visual(lf_obj_handle_t ohandle, void *f_data)
 	visual_config_t *fconfig = (visual_config_t *) f_data;
 	size_t featureLen = MAX_ATTR_VALUE;
 	unsigned char featureStr[MAX_ATTR_VALUE];
-	float size, circularity;
+	float size, circularity, shapefactor;
 	float r_min, r_max;
 	char fname[MAX_ATTR_NAME];
 	int inRange;
@@ -100,6 +104,7 @@ int f_eval_visual(lf_obj_handle_t ohandle, void *f_data)
 	}
 	
 	if (fconfig->circ_mult_lower > 0) {
+
 		// read the object's circularity
 		featureLen = MAX_ATTR_VALUE;  // reset, o.w. could be too small
 		sprintf(fname, "%s%02d", UPMC_PREFIX, UPMC_REGION_CIRCULARITY);
@@ -113,6 +118,24 @@ int f_eval_visual(lf_obj_handle_t ohandle, void *f_data)
 		r_min = fconfig->features[UPMC_REGION_CIRCULARITY] * 
 				fconfig->circ_mult_lower;
 		if (circularity < r_min || circularity > r_max) 
+			return 0;
+	}
+
+    /* Shape factor ratio */
+	if (fconfig->sfr_mult_lower > 0) {
+
+		// read the object's shape factor ratio
+		sprintf(fname, "%s%02d", UPMC_PREFIX, UPMC_SHAPE_FACTOR_RATIO);
+		err = lf_read_attr(ohandle, fname, &featureLen, featureStr);
+		assert(err == 0);
+		shapefactor = atof((char *)featureStr);
+		
+		// compare to query shape factor ratio
+		r_max = fconfig->features[UPMC_SHAPE_FACTOR_RATIO] * 
+				fconfig->sfr_mult_upper;
+		r_min = fconfig->features[UPMC_SHAPE_FACTOR_RATIO] * 
+				fconfig->sfr_mult_lower;
+		if (shapefactor < r_min || shapefactor > r_max) 
 			return 0;
 	}
 

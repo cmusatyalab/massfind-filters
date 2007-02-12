@@ -138,7 +138,19 @@ void on_saveSearchButton_clicked (GtkButton *button,
   		GTK_RANGE(glade_xml_get_widget(g_xml, "circularityRangeLower")));
   }
 
-  if (sizeButtonPressed || circButtonPressed) {
+  // check for shape factor ratio
+  gboolean sfrButtonPressed = gtk_toggle_button_get_active(
+  	GTK_TOGGLE_BUTTON(glade_xml_get_widget(g_xml, "shapefactorButton")));
+  desc->sfrUpper = RANGE_VALUE_UNDEFINED;
+  desc->sfrLower = RANGE_VALUE_UNDEFINED;
+  if (sfrButtonPressed) {
+  	desc->sfrUpper = gtk_range_get_value(
+  		GTK_RANGE(glade_xml_get_widget(g_xml, "shapefactorRangeUpper")));
+  	desc->sfrLower = gtk_range_get_value(
+  		GTK_RANGE(glade_xml_get_widget(g_xml, "shapefactorRangeLower")));
+  }
+
+  if (sizeButtonPressed || circButtonPressed || sfrButtonPressed) {
 	  // save features for visual similarity search (non-normalized)
 	  desc->numvf = atoi(g_hash_table_lookup(roi->attrs, NUM_UPMC));
 	  g_debug("adding %d features for %s", desc->numvf, UPMC_PREFIX);

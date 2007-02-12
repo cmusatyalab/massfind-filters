@@ -45,6 +45,8 @@ typedef struct
 	gdouble sizeLower;
 	gdouble circUpper;
 	gdouble circLower;
+	gdouble sfrUpper;
+	gdouble sfrLower;
  	int numvf;
  	float *vfeatures;
  	int numsf;

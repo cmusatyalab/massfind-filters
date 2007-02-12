@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.in by autoheader.  */
 
+/* Define to 1 if you have the `auth' library (-lauth). */
+#undef HAVE_LIBAUTH
+
 /* Define to 1 if you have the `dconfig' library (-ldconfig). */
 #undef HAVE_LIBDCONFIG
 
@@ -14,6 +17,9 @@
 
 /* Define to 1 if you have the `hstub' library (-lhstub). */
 #undef HAVE_LIBHSTUB
+
+/* Define to 1 if you have the `krb5' library (-lkrb5). */
+#undef HAVE_LIBKRB5
 
 /* Define to 1 if you have the `log' library (-llog). */
 #undef HAVE_LIBLOG
