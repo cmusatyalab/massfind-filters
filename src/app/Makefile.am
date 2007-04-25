@@ -11,7 +11,7 @@ INCLUDES = -I$(commondir) \
 	-DMASSFIND_GLADEDIR=\""$(gladedir)"\" \
 	-DMASSFIND_FILTERDIR=\""$(filterdir)"\" \
 	-DDIAMOND_FILTERDIR=\""${libfilterdir}"\" \
-	@glade_CFLAGS@
+	@GLADE_CFLAGS@
 
 bin_PROGRAMS = massfind
 
@@ -24,6 +24,6 @@ massfind_SOURCES = \
 	diamond_interface.c diamond_interface.h \
 	drawutil.c drawutil.h
 
-massfind_LDADD = @glade_LIBS@ 
+massfind_LDADD = @GLADE_LIBS@
 
 massfind_LDFLAGS = -export-dynamic
