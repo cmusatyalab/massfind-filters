@@ -6,7 +6,7 @@ commondir = $(top_srcdir)/src/common
 INCLUDES = -I$(commondir) -DPACKAGE_DATA_DIR=\""$(datadir)"\" \
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
 	-DMASSFIND_FILTERDIR=\""$(filterdir)"\" \
-	@GLADE_CFLAGS@
+	@OPENDIAMOND_CFLAGS@ @GLADE_CFLAGS@
 
 lib_LIBRARIES = libfil_euclidian.a \
 				libfil_boostldm.a \

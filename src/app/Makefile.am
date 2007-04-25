@@ -2,7 +2,7 @@
 
 gladedir = $(datadir)/massfind/glade
 filterdir = $(datadir)/massfind/filter
-libfilterdir = ${DIAMOND_PREFIX}/lib
+libfilterdir = ${FILTERS_PREFIX}
 commondir = $(top_srcdir)/src/common
 
 INCLUDES = -I$(commondir) \
@@ -11,7 +11,7 @@ INCLUDES = -I$(commondir) \
 	-DMASSFIND_GLADEDIR=\""$(gladedir)"\" \
 	-DMASSFIND_FILTERDIR=\""$(filterdir)"\" \
 	-DDIAMOND_FILTERDIR=\""${libfilterdir}"\" \
-	@GLADE_CFLAGS@
+	@OPENDIAMOND_CFLAGS@ @GLADE_CFLAGS@
 
 bin_PROGRAMS = massfind
 
@@ -24,6 +24,6 @@ massfind_SOURCES = \
 	diamond_interface.c diamond_interface.h \
 	drawutil.c drawutil.h
 
-massfind_LDADD = @GLADE_LIBS@
+massfind_LDADD = @OPENDIAMOND_LIBS@ @GLADE_LIBS@
 
 massfind_LDFLAGS = -export-dynamic

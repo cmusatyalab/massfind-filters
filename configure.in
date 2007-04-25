@@ -21,48 +21,30 @@ PKG_CHECK_MODULES(GLADE, [$pkg_modules])
 AC_SUBST(GLADE_CFLAGS)
 AC_SUBST(GLADE_LIBS)
 
-AC_ARG_WITH(diamond,
-    [ --with-diamond=<path> path of Diamond installation. e.g. /usr/local/diamond or /opt/diamond],
-    [DIAMOND_PREFIX=$with_diamond],
-    [DIAMOND_PREFIX=/usr/local/diamond])
+PKG_CHECK_MODULES(OPENDIAMOND, [opendiamond])
+AC_SUBST(OPENDIAMOND_CFLAGS)
+AC_SUBST(OPENDIAMOND_LIBS)
 
-AC_SUBST(DIAMOND_PREFIX)
-AC_SUBST(LDFLAGS, "-L${DIAMOND_PREFIX}/lib")
-AC_SUBST(CPPFLAGS, "-Werror-implicit-function-declaration -I${DIAMOND_PREFIX}/include")
 
-# XXX circular dependencies
-AC_SUBST(LIBS, "-lpthread -lm -lsearchlet -lfilterexec -lfilter -llog -lodisk -ltools -lhstub -ldctl -ldconfig -llog -lssl -lkrb5 -lauth -ltools")
+AC_ARG_WITH(filters,
+    [  --with-filters=<path> path of filters installation. e.g. /usr/local/diamond/lib or /opt/diamond/lib],
+    [FILTERS_PREFIX=$with_filters],
+    [FILTERS_PREFIX=/usr/local/diamond/lib])
+
+AC_SUBST(FILTERS_PREFIX)
+AC_SUBST(AM_CPPFLAGS, "-Wall -Werror-implicit-function-declaration")
+
+AC_SEARCH_LIBS([sqrt], [m],, AC_MSG_FAILURE([cannot find math library]))
+AC_SEARCH_LIBS([pthread_create],
+	[pthread],, AC_MSG_FAILURE([cannot find pthread_create function]))
 
 # XXX should work on more than 1 arch
-AC_SUBST(CFLAGS, "-m32 -g")
+AC_SUBST(AM_CFLAGS, "-m32")
 
-# XXX replace mains with real functions
-AC_CHECK_LIB([dconfig], [main], ,
-        [AC_MSG_ERROR(Missing libdconfig)])
-AC_CHECK_LIB([dctl], [dctl_read_char], ,
-        [AC_MSG_ERROR(Missing libdctl)])
-AC_CHECK_LIB([filter], [main], ,
-        [AC_MSG_ERROR(Missing libfilter)])
-AC_CHECK_LIB([searchlet], [main], ,
-        [AC_MSG_ERROR(Missing libsearchlet)])
-AC_CHECK_LIB([odisk], [main], ,
-        [AC_MSG_ERROR(Missing libodisk)])
-AC_CHECK_LIB([filterexec], [main], ,
-        [AC_MSG_ERROR(Missing libfilterexec)])
-AC_CHECK_LIB([hstub], [main], ,
-        [AC_MSG_ERROR(Missing libhstub)])
-AC_CHECK_LIB([log], [main], ,
-        [AC_MSG_ERROR(Missing liblog)])
-AC_CHECK_LIB([tools], [main], ,
-        [AC_MSG_ERROR(Missing libtools)])
-AC_CHECK_LIB([auth], [main], ,
-        [AC_MSG_ERROR(Missing libauth)])
-AC_CHECK_LIB([krb5], [main], ,
-        [AC_MSG_ERROR(Missing libkrb5)])
-        
+
 # this filter library is installed with snapfind
-AC_CHECK_FILE([${DIAMOND_PREFIX}/lib/fil_rgb.a],,
-			[AC_MSG_ERROR(Missing fil_rgb.a)])
+AC_CHECK_FILE([${FILTERS_PREFIX}/fil_rgb.a],,
+			[AC_MSG_ERROR([Missing fil_rgb.a, consider using --with-filters option])])
 
 AC_OUTPUT([
 Makefile
