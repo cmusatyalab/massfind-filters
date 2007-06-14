@@ -8,6 +8,8 @@ INCLUDES = -I$(commondir) -DPACKAGE_DATA_DIR=\""$(datadir)"\" \
 	-DMASSFIND_FILTERDIR=\""$(filterdir)"\" \
 	@OPENDIAMOND_CFLAGS@ @GLADE_CFLAGS@
 
+AM_CFLAGS = -fPIC
+
 lib_LIBRARIES = libfil_euclidian.a \
 				libfil_boostldm.a \
 				libfil_qaldm.a \
@@ -23,13 +25,13 @@ libfil_visual_a_SOURCES = fil_visual.c fil_visual.h roi_features.h upmc_features
 
 ## override automake's rules
 libfil_euclidian.a: fil_euclidian.o
-	$(LD) -o $@ -r $^
+	$(LD) -melf_i386 -o $@ -r $^
 
 libfil_boostldm.a: fil_boostldm.o
-	$(LD) -o $@ -r $^
+	$(LD) -melf_i386 -o $@ -r $^
 
 libfil_qaldm.a: fil_qaldm.o
-	$(LD) -o $@ -r $^
+	$(LD) -melf_i386 -o $@ -r $^
 
 libfil_visual.a: fil_visual.o
-	$(LD) -o $@ -r $^
+	$(LD) -melf_i386 -o $@ -r $^
