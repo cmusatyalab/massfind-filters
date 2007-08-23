@@ -34,17 +34,32 @@ int processed_objects;
 int dropped_objects;
 
 static ls_search_handle_t diamond_init(void) {
+  ls_search_handle_t diamond_handle;
+
+  diamond_handle = ls_init_search();
+  return(diamond_handle);
+}
+
+static ls_search_handle_t generic_search (char *filter_spec_name) {
+  static ls_search_handle_t diamond_handle = NULL;
+  int f1, f2;
   int i;
   int j;
   int err;
   void *cookie;
   char *name;
-  ls_search_handle_t diamond_handle;
+  int num_devices;
   gid_list_t diamond_gid_list;
   struct collection_t collections[MAX_ALBUMS+1] = { { NULL } };
   ls_dev_handle_t dev_list[16];
-  int num_devices;
-	
+
+  char buf[1];
+
+  if (diamond_handle == NULL) {
+  	  diamond_handle = diamond_init();
+  }
+
+  // scope
   printf("reading collections...\n");
   {
     int pos = 0;
@@ -74,29 +89,14 @@ static ls_search_handle_t diamond_init(void) {
     }
   }
 
-  diamond_handle = ls_init_search();
-  
   err = ls_set_searchlist(diamond_handle, 1, diamond_gid_list.gids);
   g_assert(!err);
-  
+
   num_devices = 16;
   err = ls_get_dev_list(diamond_handle, dev_list, &num_devices);
   g_assert(!err);
   g_debug("Searching on %d devices", num_devices);
-  
-  return(diamond_handle);
-}
 
-static ls_search_handle_t generic_search (char *filter_spec_name) {
-  static ls_search_handle_t diamond_handle = NULL;
-  int f1, f2;
-  int err;
-
-  char buf[1];
-
-  if (diamond_handle == NULL) {
-  	  diamond_handle = diamond_init();
-  }
 
   // append our stuff
   f1 = g_open(MASSFIND_FILTERDIR "/rgb-filter.txt", O_RDONLY);
