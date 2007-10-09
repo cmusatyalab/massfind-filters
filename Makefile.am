@@ -2,7 +2,7 @@
 
 SUBDIRS = src data
 
-EXTRA_DIST = LICENSE
+EXTRA_DIST = LICENSE CREDITS Makefile.filters
 
 install-data-local:
 	@$(NORMAL_INSTALL)

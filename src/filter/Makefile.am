@@ -15,13 +15,13 @@ lib_LIBRARIES = libfil_euclidian.a \
 				libfil_qaldm.a \
 				libfil_visual.a
 
-libfil_euclidian_a_SOURCES = fil_euclidian.c fil_euclidian.h roi_features.h
+libfil_euclidian_a_SOURCES = fil_euclidian.c fil_euclidian.h $(commondir)/roi_features.h
 
-libfil_boostldm_a_SOURCES = fil_boostldm.c fil_boostldm.h roi_features.h
+libfil_boostldm_a_SOURCES = fil_boostldm.c fil_boostldm.h $(commondir)/roi_features.h
 
-libfil_qaldm_a_SOURCES = fil_qaldm.c fil_qaldm.h roi_features.h
+libfil_qaldm_a_SOURCES = fil_qaldm.c fil_qaldm.h $(commondir)/roi_features.h
 
-libfil_visual_a_SOURCES = fil_visual.c fil_visual.h roi_features.h upmc_features.h
+libfil_visual_a_SOURCES = fil_visual.c fil_visual.h $(commondir)/roi_features.h $(commondir)/upmc_features.h
 
 ## override automake's rules
 libfil_euclidian.a: fil_euclidian.o
