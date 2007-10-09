@@ -38,6 +38,10 @@ extern "C" {
   gboolean on_selectedResult_configure_event (GtkWidget *widget,
 					   GdkEventConfigure *event,
 					   gpointer          user_data);
+
+  void on_defineScope_clicked (GtkButton *button,
+			       gpointer user_data);
+
 #ifdef __cplusplus
 }
 #endif

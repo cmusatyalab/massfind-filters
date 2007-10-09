@@ -29,6 +29,7 @@
 #include "drawutil.h"
 #include "roi_features.h"
 #include "upmc_features.h"
+#include "lib_scope.h"
 
 #define QUERY_FEATURE_SUFFIX "q"
 #define RESULT_FEATURE_SUFFIX "r"
@@ -302,3 +303,7 @@ gboolean on_selectedResultEventBox_button_press_event(GtkWidget *widget,
 
 }
 
+void on_defineScope_clicked (GtkButton *button,
+			     gpointer user_data) {
+  ls_define_scope();
+}
