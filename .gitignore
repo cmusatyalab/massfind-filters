@@ -6,6 +6,7 @@ Makefile.in
 *.bak
 *.o
 *.a
+*.so
 
 /autom4te.cache
 /aclocal.m4

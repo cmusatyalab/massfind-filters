@@ -42,8 +42,8 @@ AC_SUBST(AM_CFLAGS, "-m32")
 
 
 # this filter library is installed with snapfind
-AC_CHECK_FILE([${FILTERS_PREFIX}/fil_rgb.a],,
-			[AC_MSG_ERROR([Missing fil_rgb.a, consider using --with-filters option])])
+AC_CHECK_FILE([${FILTERS_PREFIX}/fil_rgb.so],,
+			[AC_MSG_ERROR([Missing fil_rgb.so, consider using --with-filters option])])
 
 AC_OUTPUT([
 Makefile

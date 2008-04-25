@@ -120,7 +120,7 @@ static ls_search_handle_t generic_search (char *filter_spec_name) {
   close(f2);
 
   err = ls_set_searchlet(diamond_handle, DEV_ISA_IA32,
-			 DIAMOND_FILTERDIR "/fil_rgb.a",
+			 DIAMOND_FILTERDIR "/fil_rgb.so",
 			 filter_spec_name);
   g_assert(!err);
 
@@ -360,7 +360,7 @@ ls_search_handle_t diamond_similarity_search(search_desc_t *desc) {
 	  "INIT_FUNCTION  f_init_euclidian\n"
 	  "FINI_FUNCTION  f_fini_euclidian\n",
 	  (int) desc->threshold);
-	strcat(filter_name, "/libfil_euclidian.a");
+	strcat(filter_name, "/libfil_euclidian.so");
 	break;
 	
   	case BOOSTLDM:
@@ -371,7 +371,7 @@ ls_search_handle_t diamond_similarity_search(search_desc_t *desc) {
 	  "INIT_FUNCTION  f_init_boostldm\n"
 	  "FINI_FUNCTION  f_fini_boostldm\n",
 	  (int) desc->threshold);
- 	strcat(filter_name, "/libfil_boostldm.a");
+ 	strcat(filter_name, "/libfil_boostldm.so");
   	break;
   	
   	case QALDM:
@@ -382,7 +382,7 @@ ls_search_handle_t diamond_similarity_search(search_desc_t *desc) {
 	  "INIT_FUNCTION  f_init_qaldm\n"
 	  "FINI_FUNCTION  f_fini_qaldm\n",
 	  (int) desc->threshold);
-	strcat(filter_name, "/libfil_qaldm.a");
+	strcat(filter_name, "/libfil_qaldm.so");
  	break;
   }
   
@@ -405,7 +405,7 @@ ls_search_handle_t diamond_similarity_search(search_desc_t *desc) {
 
   if (desc->vfeatures != NULL) {
 	  strcpy(filter_name, DIAMOND_FILTERDIR);
-	  strcat(filter_name, "/libfil_visual.a");
+	  strcat(filter_name, "/libfil_visual.so");
 	  err = ls_add_filter_file(dr, DEV_ISA_IA32, filter_name);
 	  g_assert(!err);
   }
