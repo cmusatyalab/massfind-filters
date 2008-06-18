@@ -237,7 +237,7 @@ gboolean diamond_result_callback(gpointer g_data) {
     gtk_widget_set_sensitive(stopSearch, FALSE);
     gtk_widget_set_sensitive(startSearch, TRUE);
 
-    ls_abort_search(dr);
+    ls_terminate_search(dr);
     return FALSE;
   }
 
