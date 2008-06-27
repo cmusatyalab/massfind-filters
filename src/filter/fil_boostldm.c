@@ -287,8 +287,8 @@ int f_eval_boostldm(lf_obj_handle_t ohandle, void *f_data)
 	size_t featureLen = MAX_ATTR_VALUE;
 	unsigned char featureStr[MAX_ATTR_VALUE];
 	int numFeatures;
-	float f;
-	float distance = 0;
+	double f;
+	double distance = 0;
 	char fname[MAX_ATTR_NAME];
 	
 	lf_log(LOGL_TRACE, "f_eval_boostldm: enter");
@@ -313,9 +313,10 @@ int f_eval_boostldm(lf_obj_handle_t ohandle, void *f_data)
 	}
 	
 	// scale distance to spread out results
-	int similarity = 100*expf(-10.0*distance);
+	//	int similarity = 200.0 * exp(negDistance) / (1.0 + exp(negDistance));
+	int similarity = 5000.0 * (.2 - distance - 0.04);
 	
-	//printf("distance = %f, similarity %d\n", distance, similarity);
+	printf("distance = %f, similarity %d\n", distance, similarity);
     		
 	// save results as attributes
 	err = lf_write_attr(ohandle, "similarity", sizeof(int), 
