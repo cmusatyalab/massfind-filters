@@ -19,3 +19,5 @@ Makefile.in
 /stamp*
 
 /src/app/massfind
+
+.deps
