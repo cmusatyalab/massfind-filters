@@ -25,6 +25,7 @@
 #include <glib/gstdio.h>
 #include <sys/param.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "lib_filter.h"
 #include "lib_dconfig.h"
