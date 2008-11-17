@@ -2194,9 +2194,12 @@
 </widget>
 
 <widget class="GtkAboutDialog" id="aboutdialog1">
+  <property name="border_width">5</property>
   <property name="destroy_with_parent">False</property>
   <property name="name" translatable="yes">MassFind</property>
-  <property name="copyright" translatable="yes">Copyright © 2006 Intel Corporation</property>
+  <property name="copyright" translatable="yes">Copyright © 2006-2007 Intel Corporation
+Copyright © 2006-2008 Carnegie Mellon University
+</property>
   <property name="comments" translatable="yes">A Diamond application for exploration of breast tumors.</property>
   <property name="license" translatable="yes">This program and the accompanying materials are made available under the terms of the Eclipse Public License v1.0 which accompanies this distribution in the file named LICENSE.</property>
   <property name="wrap_license">True</property>
@@ -6784,6 +6787,22 @@
       </child>
     </widget>
   </child>
+</widget>
+
+<widget class="GtkAboutDialog" id="aboutdialog2">
+  <property name="border_width">5</property>
+  <property name="destroy_with_parent">False</property>
+  <property name="name" translatable="yes">MassFind</property>
+  <property name="copyright" translatable="yes">Copyright © 2006-2007 Intel Corporation
+Copyright © 2006-2008 Carnegie Mellon University</property>
+  <property name="comments" translatable="yes">A Diamond application for exploration of breast tumors.</property>
+  <property name="license" translatable="yes">This program and the accompanying materials are made available under the terms of the Eclipse Public License v1.0 which accompanies this distribution in the file named LICENSE.</property>
+  <property name="wrap_license">True</property>
+  <property name="website"></property>
+  <property name="website_label" translatable="yes"></property>
+  <property name="authors">Lily Mummert &lt;lily.b.mummert@intel.com&gt;</property>
+  <property name="translator_credits" translatable="yes" comments="TRANSLATORS: Replace this string with your names, one name per line.">translator-credits</property>
+  <signal name="delete_event" handler="gtk_widget_hide" last_modification_time="Tue, 12 Sep 2006 17:46:02 GMT"/>
 </widget>
 
 </glade-interface>
