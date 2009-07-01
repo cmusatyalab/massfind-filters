@@ -25,6 +25,7 @@
 #include "roimap.h"
 #include "massfind.h"
 
+#define TEXT_ATTR_EXT ".text_attr"
 #define MAPFILENAME "Truthfile.txt"
 #define MAXLINELEN 256
 #define SEPARATORS " \t"

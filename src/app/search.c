@@ -305,6 +305,7 @@ gboolean on_selectedResultEventBox_button_press_event(GtkWidget *widget,
 }
 
 void on_defineScope_clicked (GtkButton *button,
-			     gpointer user_data) {
-  ls_define_scope();
+			     gpointer user_data)
+{
+  ls_define_scope(dr);
 }

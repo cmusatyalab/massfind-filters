@@ -29,7 +29,7 @@
 #include <unistd.h>
 
 #include "lib_filter.h"
-#include "lib_dconfig.h"
+#include "lib_scope.h"
 
 int total_objects;
 int processed_objects;
@@ -45,14 +45,8 @@ static ls_search_handle_t diamond_init(void) {
 static ls_search_handle_t generic_search (char *filter_spec_name) {
   static ls_search_handle_t diamond_handle = NULL;
   int f1, f2;
-  int i;
-  int j;
   int err;
-  void *cookie;
-  char *name;
   int num_devices;
-  gid_list_t diamond_gid_list;
-  struct collection_t collections[MAX_ALBUMS+1] = { { NULL } };
   ls_dev_handle_t dev_list[16];
 
   char buf[1];
@@ -62,37 +56,7 @@ static ls_search_handle_t generic_search (char *filter_spec_name) {
   }
 
   // scope
-  printf("reading collections...\n");
-  {
-    int pos = 0;
-    err = nlkup_first_entry(&name, &cookie);
-    while(!err && pos < MAX_ALBUMS)
-      {
-	collections[pos].name = name;
-	collections[pos].active = pos ? 0 : 1; /* first one active */
-	pos++;
-	err = nlkup_next_entry(&name, &cookie);
-      }
-    collections[pos].name = NULL;
-  }
-
-  diamond_gid_list.num_gids = 0;
-  for (i=0; i<MAX_ALBUMS && collections[i].name; i++) {
-    if (collections[i].active) {
-      int err;
-      int num_gids = MAX_ALBUMS;
-      groupid_t gids[MAX_ALBUMS];
-      err = nlkup_lookup_collection(collections[i].name, &num_gids, gids);
-      g_assert(!err);
-      for (j=0; j < num_gids; j++) {
-		g_debug("adding gid: %lld\n", gids[j]);
-		diamond_gid_list.gids[diamond_gid_list.num_gids++] = gids[j];
-      }
-    }
-  }
-
-  err = ls_set_searchlist(diamond_handle, 1, diamond_gid_list.gids);
-  g_assert(!err);
+  ls_define_scope(diamond_handle);
 
   num_devices = 16;
   err = ls_get_dev_list(diamond_handle, dev_list, &num_devices);
@@ -198,7 +162,6 @@ gboolean diamond_result_callback(gpointer g_data) {
   GdkPixbuf *pix, *pix2, *pix3;
 
   static time_t last_time;
-  int i;
   gchar *title;
   GtkTreeIter iter;
   GtkTreePath *path;

@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(MassFind, 0.1)
+AC_INIT(MassFind, 0.2)
 AC_CONFIG_SRCDIR(src)
 AM_INIT_AUTOMAKE(foreign)
 AM_CONFIG_HEADER(config.h)
@@ -42,8 +42,8 @@ AC_SUBST(AM_CFLAGS, "-m32")
 
 
 # this filter library is installed with snapfind
-AC_CHECK_FILE([${FILTERS_PREFIX}/fil_rgb.so],,
-			[AC_MSG_ERROR([Missing fil_rgb.so, consider using --with-filters option])])
+#AC_CHECK_FILE([${FILTERS_PREFIX}/fil_rgb.so],,
+#			[AC_MSG_ERROR([Missing fil_rgb.so, consider using --with-filters option])])
 
 AC_OUTPUT([
 Makefile
