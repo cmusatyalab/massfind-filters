@@ -8,8 +8,6 @@
  * the terms of the Eclipse Public License v1.0 which accompanies this
  * distribution in the file named LICENSE.
  *
- * Technical and financial contributors are listed in the file named
- * CREDITS.
  */
  
 /*
