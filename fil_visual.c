@@ -29,8 +29,8 @@
 #define MAX_ATTR_NAME           128
 #define MAX_ATTR_VALUE          4096
 
-int f_init_visual(int numarg, char **args, int blob_len,
-                    void *blob, const char *fname, void **data)
+int f_init_visual(int numarg, const char * const *args, int blob_len,
+                    const void *blob, const char *fname, void **data)
 {
 	visual_config_t *fconfig;
 	int i;

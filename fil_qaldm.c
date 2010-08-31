@@ -21,8 +21,8 @@
 #define MAX_ATTR_NAME           128
 #define MAX_ATTR_VALUE          4096
 
-int f_init_qaldm(int numarg, char **args, int blob_len,
-                    void *blob, const char *fname, void **data)
+int f_init_qaldm(int numarg, const char * const *args, int blob_len,
+                    const void *blob, const char *fname, void **data)
 {
 	qaldm_config_t *fconfig;
 	int i;

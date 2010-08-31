@@ -244,8 +244,8 @@ float alpha[] = {
 };
 
 
-int f_init_boostldm(int numarg, char **args, int blob_len,
-                    void *blob, const char *fname, void **data)
+int f_init_boostldm(int numarg, const char * const *args, int blob_len,
+                    const void *blob, const char *fname, void **data)
 {
 	boostldm_config_t *fconfig;
 	int i;

@@ -27,8 +27,8 @@ typedef struct visual_config
   float sfr_mult_upper;
 } visual_config_t;
 
-int f_init_visual(int numarg, char **args, int blob_len,
-                    void *blob, const char *fname, void **data);
+int f_init_visual(int numarg, const char * const *args, int blob_len,
+                    const void *blob, const char *fname, void **data);
 int f_eval_visual(lf_obj_handle_t ohandle, void *f_data);
 int f_fini_visual(void *data);
 

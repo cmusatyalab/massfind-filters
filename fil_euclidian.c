@@ -23,8 +23,8 @@
 #define MAX_ATTR_NAME           128
 #define MAX_ATTR_VALUE          4096
 
-int f_init_euclidian(int numarg, char **args, int blob_len,
-                    void *blob, const char *fname, void **data)
+int f_init_euclidian(int numarg, const char * const *args, int blob_len,
+                    const void *blob, const char *fname, void **data)
 {
 	euclidian_config_t *fconfig;
 	int i;

@@ -10,8 +10,8 @@ typedef struct euclidian_config
   float   *features;  /* features computed on object */
 } euclidian_config_t;
 
-int f_init_euclidian(int numarg, char **args, int blob_len,
-                    void *blob, const char *fname, void **data);
+int f_init_euclidian(int numarg, const char * const *args, int blob_len,
+                    const void *blob, const char *fname, void **data);
 int f_eval_euclidian(lf_obj_handle_t ohandle, void *f_data);
 int f_fini_euclidian(void *data);
 
