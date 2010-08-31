@@ -1,6 +1,4 @@
 *~
-Makefile
-Makefile.in
 
 *.Po
 *.bak
@@ -8,16 +6,3 @@ Makefile.in
 *.a
 *.so
 
-/autom4te.cache
-/aclocal.m4
-/config.*
-/mkinstalldirs
-/missing
-/depcomp
-/install-sh
-/configure
-/stamp*
-
-/src/app/massfind
-
-.deps
