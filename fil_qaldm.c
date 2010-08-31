@@ -16,11 +16,12 @@
 #include <math.h>
 #include <assert.h>
 
-#include "diamond_consts.h"
 #include "lib_filter.h"
 #include "roi_features.h"
 #include "fil_qaldm.h"
 
+#define MAX_ATTR_NAME           128
+#define MAX_ATTR_VALUE          4096
 
 int f_init_qaldm(int numarg, char **args, int blob_len,
                     void *blob, const char *fname, void **data)

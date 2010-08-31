@@ -18,10 +18,13 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "diamond_consts.h"
 #include "lib_filter.h"
 #include "roi_features.h"
 #include "fil_boostldm.h"
+
+#define MAX_ATTR_NAME           128
+#define MAX_ATTR_VALUE          4096
+
 
 float alpha[] = {
 		0.000990,

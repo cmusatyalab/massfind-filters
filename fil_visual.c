@@ -23,12 +23,13 @@
 #include <stdio.h>
 #include <glib.h>
 
-#include "diamond_consts.h"
 #include "lib_filter.h"
 #include "upmc_features.h"
 #include "roi_features.h"
 #include "fil_visual.h"
 
+#define MAX_ATTR_NAME           128
+#define MAX_ATTR_VALUE          4096
 
 int f_init_visual(int numarg, char **args, int blob_len,
                     void *blob, const char *fname, void **data)

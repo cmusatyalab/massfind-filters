@@ -18,11 +18,12 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "diamond_consts.h"
 #include "lib_filter.h"
 #include "roi_features.h"
 #include "fil_euclidian.h"
 
+#define MAX_ATTR_NAME           128
+#define MAX_ATTR_VALUE          4096
 
 int f_init_euclidian(int numarg, char **args, int blob_len,
                     void *blob, const char *fname, void **data)
