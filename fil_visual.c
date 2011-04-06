@@ -75,14 +75,12 @@ int f_fini_visual(void *data)
 int f_eval_visual(lf_obj_handle_t ohandle, void *f_data)
 {
 	int err;
-	int i;
 	visual_config_t *fconfig = (visual_config_t *) f_data;
 	size_t featureLen = MAX_ATTR_VALUE;
 	unsigned char featureStr[MAX_ATTR_VALUE];
 	float size, circularity, shapefactor;
 	float r_min, r_max;
 	char fname[MAX_ATTR_NAME];
-	int inRange;
 	
 	lf_log(LOGL_TRACE, "f_eval_visual: enter");
 	
