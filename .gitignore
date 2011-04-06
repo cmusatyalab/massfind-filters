@@ -1,8 +1,7 @@
 *~
-
-*.Po
 *.bak
-*.o
-*.a
-*.so
 
+fil_boostldm
+fil_euclidian
+fil_qaldm
+fil_visual

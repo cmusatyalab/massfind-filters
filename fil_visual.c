@@ -29,6 +29,7 @@
 #define MAX_ATTR_NAME           128
 #define MAX_ATTR_VALUE          4096
 
+static
 int f_init_visual(int numarg, const char * const *args, int blob_len,
                     const void *blob, const char *fname, void **data)
 {
@@ -62,16 +63,7 @@ int f_init_visual(int numarg, const char * const *args, int blob_len,
 	return (0);
 }
 
-int f_fini_visual(void *data)
-{
-	visual_config_t *fconfig = (visual_config_t *) data;
-	free(fconfig->features);
-	free(fconfig);
-	
-	return (0);
-}
-
-
+static
 int f_eval_visual(lf_obj_handle_t ohandle, void *f_data)
 {
 	int err;
@@ -138,3 +130,5 @@ int f_eval_visual(lf_obj_handle_t ohandle, void *f_data)
 
 	return 1;
 }
+
+LF_MAIN(f_init_visual, f_eval_visual)

@@ -244,6 +244,7 @@ float alpha[] = {
 };
 
 
+static
 int f_init_boostldm(int numarg, const char * const *args, int blob_len,
                     const void *blob, const char *fname, void **data)
 {
@@ -270,16 +271,7 @@ int f_init_boostldm(int numarg, const char * const *args, int blob_len,
 	return (0);
 }
 
-int f_fini_boostldm(void *data)
-{
-	boostldm_config_t *fconfig = (boostldm_config_t *) data;
-	free(fconfig->features);
-	free(fconfig);
-	
-	return (0);
-}
-
-
+static
 int f_eval_boostldm(lf_obj_handle_t ohandle, void *f_data)
 {
 	int err;
@@ -327,5 +319,4 @@ int f_eval_boostldm(lf_obj_handle_t ohandle, void *f_data)
 	return similarity;
 }
 
-
-
+LF_MAIN(f_init_boostldm, f_eval_boostldm)

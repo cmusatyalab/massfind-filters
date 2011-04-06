@@ -1,17 +1,17 @@
-FIL_BUILD_COMMAND=$(CC) -Wall -O2 -g -fPIC -shared $$(pkg-config glib-2.0 opendiamond --cflags) -m32 -o $@ $< $(CPPFLAGS) $(CFLAGS) $(INCLUDES)
+FIL_BUILD_COMMAND=$(CC) -Wall -O2 -g $$(pkg-config glib-2.0 opendiamond --cflags) $$(pkg-config opendiamond --libs) -lm -m32 -o $@ $< $(CPPFLAGS) $(CFLAGS) $(INCLUDES)
 
-FILTERS := libfil_euclidian.so libfil_boostldm.so libfil_qaldm.so libfil_visual.so
+FILTERS := fil_euclidian fil_boostldm fil_qaldm fil_visual
 
 all: $(FILTERS)
 
 clean:
 	$(RM) $(FILTERS)
 
-libfil_euclidian.so: fil_euclidian.c fil_euclidian.h roi_features.h
+fil_euclidian: fil_euclidian.c fil_euclidian.h roi_features.h
 	$(FIL_BUILD_COMMAND)
-libfil_boostldm.so: fil_boostldm.c fil_boostldm.h roi_features.h
+fil_boostldm: fil_boostldm.c fil_boostldm.h roi_features.h
 	$(FIL_BUILD_COMMAND)
-libfil_qaldm.so: fil_qaldm.c fil_qaldm.h roi_features.h
+fil_qaldm: fil_qaldm.c fil_qaldm.h roi_features.h
 	$(FIL_BUILD_COMMAND)
-libfil_visual.so: fil_visual.c fil_visual.h upmc_features.h
+fil_visual: fil_visual.c fil_visual.h upmc_features.h
 	$(FIL_BUILD_COMMAND)

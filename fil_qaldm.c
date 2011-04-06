@@ -21,6 +21,7 @@
 #define MAX_ATTR_NAME           128
 #define MAX_ATTR_VALUE          4096
 
+static
 int f_init_qaldm(int numarg, const char * const *args, int blob_len,
                     const void *blob, const char *fname, void **data)
 {
@@ -47,16 +48,7 @@ int f_init_qaldm(int numarg, const char * const *args, int blob_len,
 	return (0);
 }
 
-int f_fini_qaldm(void *data)
-{
-	qaldm_config_t *fconfig = (qaldm_config_t *) data;
-	free(fconfig->features);
-	free(fconfig);
-	
-	return (0);
-}
-
-
+static
 int f_eval_qaldm(lf_obj_handle_t ohandle, void *f_data)
 {
 	int err;
@@ -85,3 +77,5 @@ int f_eval_qaldm(lf_obj_handle_t ohandle, void *f_data)
 
 	return (int) distance;
 }
+
+LF_MAIN(f_init_qaldm, f_eval_qaldm)

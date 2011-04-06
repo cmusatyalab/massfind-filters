@@ -23,6 +23,7 @@
 #define MAX_ATTR_NAME           128
 #define MAX_ATTR_VALUE          4096
 
+static
 int f_init_euclidian(int numarg, const char * const *args, int blob_len,
                     const void *blob, const char *fname, void **data)
 {
@@ -49,16 +50,7 @@ int f_init_euclidian(int numarg, const char * const *args, int blob_len,
 	return (0);
 }
 
-int f_fini_euclidian(void *data)
-{
-	euclidian_config_t *fconfig = (euclidian_config_t *) data;
-	free(fconfig->features);
-	free(fconfig);
-	
-	return (0);
-}
-
-
+static
 int f_eval_euclidian(lf_obj_handle_t ohandle, void *f_data)
 {
 	int err;
@@ -96,3 +88,5 @@ int f_eval_euclidian(lf_obj_handle_t ohandle, void *f_data)
 
 	return similarity;
 }
+
+LF_MAIN(f_init_euclidian, f_eval_euclidian)
