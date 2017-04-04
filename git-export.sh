@@ -7,7 +7,13 @@ if [ -z "$1" ] ; then
 	exit 1
 fi
 
-b="massfind"
+b="massfind-filters"
 
-git archive --format tar "v$1" "--prefix=$b-$1/" -o "$b-$1.tar"
+if [ "$1" = "dev" ] ; then
+  v="HEAD"
+else
+  v="v$1"
+fi
+
+git archive --format tar "$v" "--prefix=$b-$1/" -o "$b-$1.tar"
 gzip -9f "$b-$1.tar"
