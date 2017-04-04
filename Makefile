@@ -1,4 +1,4 @@
-FIL_BUILD_COMMAND=$(CC) -Wall -O2 -g $$(pkg-config glib-2.0 opendiamond --cflags) $$(pkg-config opendiamond --libs) -lm -m32 -o $@ $< $(CPPFLAGS) $(CFLAGS) $(INCLUDES)
+FIL_BUILD_COMMAND=$(CC) -Wall -O2 -g $$(pkg-config glib-2.0 opendiamond --cflags) $$(pkg-config opendiamond --libs) -lm -o $@ $< $(CPPFLAGS) $(CFLAGS) $(INCLUDES)
 
 FILTERS := fil_euclidian fil_boostldm fil_qaldm fil_visual
 
